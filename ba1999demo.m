@@ -68,7 +68,7 @@ display(loa) % article: [-43.6, 15.0] mmHg
 % script was written with all other figures closed.
 % Figure 1 corresponds to article figure 1, figure 2 corresponds to article
 % figure 2.
-s = ba(figures(2), J1,S1, 'XName',JName, 'YName',SName, 'PlotAll',true);
+s = ba(figures(2), J1,S1, 'XName',JName, 'YName',SName, 'PlotAll',true); %TODO another change
 rSMuD = s.rSMuD;
 % Article: 0.07 (p. 140), here -0.03, so an error exists either here or in
 % the article.
