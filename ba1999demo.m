@@ -24,6 +24,9 @@ clc
 clear
 close all
 
+%% display demo text
+disp 'Demonstration of Bland-Altman analysis'
+
 %% load data
 % Table 1 from the article
 load bpdata
