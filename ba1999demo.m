@@ -74,12 +74,15 @@ rSMuD = s.rSMuD;
 % the article.
 display(rSMuD); % Spearman rank correlation between mean and difference
 
-% Figure 3 is equal to figure 2, but has added limits of agreement.
+% Figure 3 is equal to figure 2, but has added limits of agreement. It
+% corresponds to article figure 3.
 ba(figure, J1,S1, 'XName',JName, 'YName',SName, ...
     'PlotMeanDifference',true, 'PlotStatistics','basic')
 
 %% 2.2 Precision of the estimated limits of agreement (article page 141)
-s = ba(figure, J1,S1, 'XName',JName, 'YName',SName, ...
+clf % Clear figure 3 and recreate it with additional confidence intervals
+% (not shown in article).
+s = ba(gcf, J1,S1, 'XName',JName, 'YName',SName, ...
     'PlotMeanDifference',true, 'PlotStatistics','extended');
 muDCI = s.muDCI;
 loaCI = s.loaCI; % confidence interval of the loa
