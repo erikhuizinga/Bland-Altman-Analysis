@@ -145,7 +145,7 @@ function varargout = ba(varargin)
 % 
 %   pRSMuD: the p-value of the Spearman rank correlation for testing the
 %   hypothesis of no correlation against the alternative that there is a
-%   nonzero correlation. %TODO also output rhoXY,pRhoXY
+%   nonzero correlation.
 %
 %   About
 %   This MATLAB function is an implementation of the methods in the 1999

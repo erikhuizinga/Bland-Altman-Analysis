@@ -18,12 +18,6 @@
 %   You should have received a copy of the GNU General Public License
 %   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-%% fresh environment
-%TODO deze sectie verwijderen
-clc
-clear
-close all
-
 %% display demo text
 disp 'Demonstration of Bland-Altman analysis'
 
@@ -95,6 +89,3 @@ loaCI = s.loaCI; % confidence interval of the loa
 display(loaCI)
 % article muDCI (p. 142): [-20.5 -12.1]
 display(muDCI)
-
-%% 3 Relationship between difference and magnitude
-%TODO
