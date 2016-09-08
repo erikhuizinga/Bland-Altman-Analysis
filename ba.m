@@ -14,7 +14,7 @@ function varargout = ba(varargin)
 %   containing multiple fields with descriptive statistics about the
 %   agreement of x and y. For more details on s see section Output below.
 %
-%   s = BA(x,y,alpha) specifies the significance levels to calculate the
+%   s = BA(x,y,alpha) specifies the significance level to calculate the
 %   limits of agreement and confidence intervals with. alpha must be a
 %   scalar in the interval [0,1]. If alpha is not specified a value of 0.05
 %   is used by default to calculate 95% limits of agreement and confidence
@@ -40,11 +40,11 @@ function varargout = ba(varargin)
 %   Examples
 %   See and run the ba1999demo.m script for examples of the syntax of BA
 %   used with data from the 1999 article by Bland and Altman. Calling BA
-%   without input arguments also runs the 
+%   without input arguments also runs the demonstration script.
 %
 %   Name-Value Pair Arguments
 %   Specify optional comma-separated pairs of Name,Value arguments to
-%   access various options. Name is the argument name and Values is the
+%   access various options. Name is the argument name and Value is the
 %   corresponding value. Name must appear inside single quotes (' '). You
 %   can specify several name and value pair arguments in any order as
 %   Name1,Value1,...,NameN,ValueN.
@@ -52,38 +52,39 @@ function varargout = ba(varargin)
 %
 %   'XName': Name of x variable
 %   inputname of input argument x (default) | string
-%   Name of x variable, specified as a string. XName is used in the plot
+%   Name of x variable, specified as a string. 'XName' is used in the plot
 %   titles.
 %   Example: 'XName','X' sets the first measurement's name to 'X'.
 %
 %   'YName': Name of y variable
 %   inputname of input argument y (default) | string
-%   Name of y variable, specified as a string. YName is used in the plot
+%   Name of y variable, specified as a string. 'YName' is used in the plot
 %   titles.
 %   Example: 'YName','Y' sets the second measurement's name to 'Y'.
 %
 %   'Exclude': Observation pairs to exclude
 %   [] (default) | logical indices | numeric indices
 %   Observation pairs to exclude, specified as logical or numeric indices
-%   to index into x and y. The specified elements are
+%   to index into x and y. The specified elements are removed from x and y
+%   before any calculations or plots.
 %   Example: 'Exclude',[1, 3, 4] excludes elements 1, 3 and 4 from x and y.
 %   Example: 'Exclude',[0 0 1 0 1 1 0 0 1] excludes the true elements from
 %   x and y.
 %
 %   'PlotMeanDifference': Create mean-difference plot
 %   false (default) | true
-%   Create mean-difference plot if the specified value is true. The
+%   Create the mean-difference plot if the specified value is true. The
 %   mean-difference plot is a scatter plot of the difference between
-%   measurement observations versus their mean. Specifying the 'PlotAll'
-%   Name-Value pair argument as true creates the mean-difference plot,
-%   regardless of the 'PlotMeanDifference' value.
+%   observations versus their mean. Specifying the 'PlotAll' Name-Value
+%   pair argument as true creates the mean-difference plot, regardless of
+%   the 'PlotMeanDifference' value.
 %
 %   'PlotCorrelation': Create correlation plot
 %   false (default) | true
-%   Create correlation plot if the specified value is true. The correlation
-%   plot is a scatter plot of x and y. Specifying the 'PlotAll' Name-Value
-%   pair argument as true creates the correlation plot, regardless of the
-%   'PlotCorrelation' value.
+%   Create the correlation plot if the specified value is true. The
+%   correlation plot is a scatter plot of x and y. Specifying the 'PlotAll'
+%   Name-Value pair argument as true creates the correlation plot,
+%   regardless of the 'PlotCorrelation' value.
 %
 %   'PlotAll': Create all plots
 %   false (default) | true
@@ -125,15 +126,18 @@ function varargout = ba(varargin)
 %   
 %   muD: the mean difference between x and y, also called the bias.
 % 
-%   muDCI: the confidence interval of the mean difference.
+%   muDCI: the 95% (default, depending on alpha) confidence interval of
+%   the mean difference.
 % 
-%   loa: the limits of agreement, a 2 element vector. The first element is
-%   the lower limit of agreement, the second is the upper.
+%   loa: the 95% (default, depending on alpha) limits of agreement, a 2
+%   element vector. The first element is the lower limit of agreement, the
+%   second is the upper.
 % 
-%   loaCI: the confidence interval of the limits of agreement, a 2x2
-%   matrix. The first column corresponds to lower limit of agreement, the
-%   second to the upper limit. The first and second row correspond to the
-%   lower and upper confidence interval bound respectively.
+%   loaCI: the 95% (default, depending on alpha) confidence interval of the
+%   limits of agreement, a 2x2 matrix. The first column corresponds to
+%   lower limit of agreement, the second to the upper limit. The first and
+%   second row correspond to the lower and upper confidence interval bound
+%   respectively.
 % 
 %   sD: the standard deviation of the differences.
 % 
@@ -153,13 +157,13 @@ function varargout = ba(varargin)
 %   institution's library or buy it.
 %
 %   The article comprises of 5 methodological sections (sections 2-6). The
-%   current version of this MATLAB file (1 september 2016) implements the
+%   current version of this MATLAB file (8 september 2016) implements the
 %   first methodological section. More sections will be added in the
 %   future.
 %
-%   The demonstration script ba1999demo.m is an implementation of the
+%   The demonstration script `ba1999demo.m` is an implementation of the
 %   calculations done by Bland and Altman in the article. Their article
-%   contains a number of example data sets, which they then use in their
+%   contains a number of example data sets, which they use in their
 %   methods. The demonstration script illustrates the same results and the
 %   syntax used to obtain them.
 %
@@ -416,8 +420,23 @@ seMuD = sqrt(varMuD); % standard error of muD (p. 142)
 % varSD = sD^2/2/(n-1); % approximated variance of sD (article p. 141)
 % Instead, use exact formula for unbiased estimated variance
 % Source: http://stats.stackexchange.com/a/28567/80486
-sSD = sD * gamma((n-1)/2) / gamma(n/2) * ...
-    sqrt( (n-1)/2 - ( gamma(n/2) / gamma((n-1)/2) )^2 );
+% sSD = sD * gamma((n-1)/2) / gamma(n/2) * ...
+%     sqrt( (n-1)/2 - ( gamma(n/2) / gamma((n-1)/2) )^2 ); 
+gammafrac = gamma((n-1)/2) / gamma(n/2);
+% if ~isfinite(gammafrac) % true for large n
+    % % approximate using gamma(a+b)/gamma(a) ~ a^b
+    % % Source: https://en.wikipedia.org/w/index.php?title=Gamma_function&oldid=737220343#General
+    % % compare:
+    % % figure
+    % % n = 1:500;
+    % % g1 = gamma((n-1)/2)./gamma(n/2);
+    % % g2 = ((n-1)/2).^(-1/2);
+    % % g3 = sqrt(2./(n-1));
+    % % plot(n,g1,n,g2,n,g3,n,g1-g2,n,g1-g3,n,g2-g3)
+    % % legend g1 g2 g3 g1-g2 g1-g3 g2-g3
+    % gammafrac = sqrt(2/(n-1)); % same as: gammafrac = ((n-1)/2).^(-1/2);
+% end
+sSD = sD * gammafrac * sqrt( (n-1)/2 - gammafrac^-2 );
 varSD = sSD^2; % unbiased estimate of variance of s_d
 
 % limits of agreement statistics
@@ -426,7 +445,7 @@ z = Ninv(p); % inverse normal distribution at p = 1-alpha/2
 loa = muD + z*sD*[-1 1]; % limits of agreement (LOA)
 
 % confidence intervals (CI) for muD and loa
-t = tinv(p,n-1);
+t = Tinv(p,n-1);
 varLoa = varMuD + z^2*varSD; % article: bottom of p. 141
 seLoa = sqrt(varLoa); % standard error of the LOA
 eLoa = t*seLoa; % LOA error
@@ -497,7 +516,7 @@ if doPlotC
     end
     
     % y = x reference line
-    eqLine = refline(1,0); % 45° degree, because of axis equal
+    eqLine = refline(1,0); % 45Â° degree, because of axis equal
     eqLine.Color = [.75 .75 .75];
     eqLine.LineStyle = '--';
     eqLine.DisplayName = 'line of equality';
@@ -507,8 +526,8 @@ if doPlotC
     % axes labels
     xlabel('M_1')
     ylabel('M_2')
-    title(sprintf(['Scatter plot of:\n' ...
-        ' \\rm\\itM_1\\rm: %s\n \\itM_2\\rm: %s'],xName,yName))
+    title(sprintf(['Scatter plot of (%u observations):\n' ...
+        ' \\rm\\itM_1\\rm: %s\n \\itM_2\\rm: %s'],n,xName,yName))
     
     % legend
     legend(legEntries,'Location','SouthEast')
@@ -593,15 +612,15 @@ if doPlotMD
         % plot additional statistics
         if doPlotExtStats
             % lower LOA errorbar
-            lE = errorbar(xl(2),loa(1),eLoa,'k');
+            lE = errorbar(xl(2),loa(1),eLoa,'r');
             lE.UserData = lLine.UserData;
             
             % mean difference errorbar
-            muDE = errorbar(xl(2),muD,eMuD,'k');
+            muDE = errorbar(xl(2),muD,eMuD,'r');
             muDE.UserData = muDLine.UserData;
             
             % upper LOA errorbar
-            uE = errorbar(xl(2),loa(2),eLoa,'k');
+            uE = errorbar(xl(2),loa(2),eLoa,'r');
             uE.UserData = uLine.UserData;
         end
     end
@@ -631,8 +650,8 @@ if doPlotMD
     % axes labels
     xlabel(sprintf('mean \\itµ = (M_1+M_2)/2')) %TODO check µ
     ylabel(sprintf('difference \\itd = M_1-M_2'))
-    title(sprintf(['Mean-difference plot of:\n' ...
-        ' \\rm\\itM_1\\rm: %s\n \\itM_2\\rm: %s'],xName,yName))
+    title(sprintf(['Mean-difference plot of (%u observation pairs):\n' ...
+        ' \\rm\\itM_1\\rm: %s\n \\itM_2\\rm: %s'],n,xName,yName))
     
     % legend
     legend(legEntries,'Location','SouthWest')
@@ -663,6 +682,26 @@ end
 function x = Ninv(p)
 % inverse normal
 x = -sqrt(2).*erfcinv(2*p);
+end
+
+function x = Tinv(p,n)
+% inverse t
+assert(p>=.75 & p<=1,'p must satisfy 0.75<=p<=1.')
+if n<=1
+    error 'Not implemented for n<=1.'
+elseif n<1000
+    bii = betaincinv(2*abs(p-1/2), n/2, 1/2, 'upper');
+    x = sqrt(n*(1-bii)/bii);
+else % n>=1000
+    % Reference:
+    % Abramowitz & Stegun, 10th ed. 1972, formula 26.7.5
+    xp = Ninv(p);
+    g1 = @(x) (x^3+x)/4;
+    g2 = @(x) (5*x^5+16*x^3+3*x)/96;
+    g3 = @(x) (3*x^7+19*x^5+17*x^3-15*x)/384;
+    g4 = @(x) (79*x^9+776*x^7+1482*x^5-1920*x^3-945*x)/92160;
+    x = xp + g1(xp)/n + g2(xp)/n^2 + g3(xp)/n^3 + g4(xp)/n^4;
+end
 end
 
 function tf = isfigure(f)

@@ -55,12 +55,12 @@ lEx = (n==78) | (n==80); % alternative: logical indices
 s = ba(J1,S1, 'Exclude',iEx);
 muD = s.muD;
 loa = s.loa;
-% Erratum: a small error, probably a typo, exist in the original article.
-% Note the difference between the mean difference ‘mud’ and the article's
-% mean difference. However, because the limits of agreement are the same
-% and, of course, the mean difference equals the mean of the limits of
-% agreement, thus the calculation here appears to be correct.
 display(muD) % article: -14.9 mmHg
+% Erratum: a small error, probably a typo, exist in the original article.
+% Note the difference between the muD and the article's mean difference.
+% However, because the limits of agreement are the same and, of course, the
+% mean difference equals the mean of the limits of agreement, thus the
+% calculation here appears to be correct.
 display(loa) % article: [-43.6, 15.0] mmHg
 
 %% 2.1 Graphical presentation of agreement (article page 140)
@@ -68,7 +68,7 @@ display(loa) % article: [-43.6, 15.0] mmHg
 % script was written with all other figures closed.
 % Figure 1 corresponds to article figure 1, figure 2 corresponds to article
 % figure 2.
-s = ba([figure figure], J1,S1, 'XName',JName, 'YName',SName, 'PlotAll',true);
+s = ba(figures(2), J1,S1, 'XName',JName, 'YName',SName, 'PlotAll',true);
 rSMuD = s.rSMuD;
 % Article: 0.07 (p. 140), here -0.03, so an error exists either here or in
 % the article.
