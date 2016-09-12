@@ -2,7 +2,8 @@ function varargout = baloa( ...
     x, xName, y, yName, a, ...
     doPlotMD, axMD, ...
     doPlotC, axC, ...
-    doPlotBasicStats, doPlotExtStats, doPlotLS)
+    doPlotBasicStats, doPlotExtStats, doPlotLS, ...
+    doRatio)
 %% preparation
 % multiFig = false;
 if doPlotMD || doPlotC
@@ -29,8 +30,12 @@ yok = y(lok);
 muXY = mean([xok,yok],2);
 
 % difference statistics
-d = xok-yok; % difference
-muD = mean(d); % mean of difference
+if doRatio
+    d = xok./yok; % ratio
+else
+    d = xok-yok; % difference
+end
+muD = mean(d); % mean of difference or ratio
 
 sD = std(d); % s_d in article
 % varD = var(d); % s_d^2 in article
@@ -107,8 +112,6 @@ if doPlotC
     % plot y against x
     sC = scatter(xok,yok);
     sC.UserData = dcStruct([],'M1','M2',[],@dcXY);
-    axis tight
-    axis equal
     
     if doPlotBasicStats
         % add correlation to legend
@@ -125,7 +128,7 @@ if doPlotC
     
     % plot least-squares line
     if doPlotLS
-        XYLine = refline;
+        XYLine = refline; %TODO make independent of stats toolbox?
         XYLine.Color = 'r';
         legEntries(end+1) = XYLine;
         XYLine.DisplayName = 'least-squares';
@@ -155,6 +158,10 @@ if doPlotC
     
     % reorder plot children
     axC.Children = axC.Children([end 1:end-1]);
+    
+    % equalise axes
+    axis tight
+    axis equal
 end
 
 % mean-difference plot
@@ -165,9 +172,24 @@ if doPlotMD
     
     % mean-difference plot
     sMD = scatter(muXY,d);
-    sMD.UserData = dcStruct([],'µ','d',[],@dcXY); %TODO check µ
-    axis equal
+    if doRatio
+        sMDYLongName = 'ratio';
+        sMDYName = 'R';
+    else
+        sMDYLongName = 'difference';
+        sMDYName = 'd';
+    end
+    sMD.UserData = dcStruct([],'µ',sMDYName,[],@dcXY); %TODO check µ
     xl = xlim;
+    
+    % zero difference line
+    if doRatio, y0 = 1; else y0 = 0; end
+    line0 = refline(0,y0);
+    line0.Color = [.75 .75 .75];
+    line0.LineStyle = '--';
+    line0.DisplayName = 'line of equality';
+    line0.UserData = dcStruct(line0.DisplayName,[],[],[],@dcXY);
+    legEntries(end+1) = line0;
     
     % plot statistics
     if doPlotBasicStats
@@ -197,10 +219,12 @@ if doPlotMD
         lLine = refline(0,loa(1));
         lLine.Color = 'k';
         lLine.UserData = dcStruct([],[],'lower LOA', ...
-            [num2str(100*(1-a)) '% CI = [' num2str(loaCI(1,1)) ', ' num2str(loaCI(2,1)) ']'], ...
+            [num2str(100*(1-a)) '% CI = [' num2str(loaCI(1,1)) ', ' ...
+            num2str(loaCI(2,1)) ']'], ...
             @dcXY);
-        text(xl(2)-padding/2,loa(1)+padding/2,sprintf( ...
-            '$\\overline{d}-%.2fs_d$',z ...
+        text(xl(2)-padding/2,loa(1)+padding/2, ...
+            sprintf( ...
+            '$\\overline{%s}-%.2fs_%s$',sMDYName,z,sMDYName ...
             ), ...
             'Interpreter','latex', ...
             'HorizontalAlignment','right')
@@ -214,7 +238,7 @@ if doPlotMD
             @dcXY);
         text(xl(2)-padding/2,loa(2)+padding/2, ...
             sprintf( ...
-            '$\\overline{d}+%.2fs_d$',z ...
+            '$\\overline{%s}+%.2fs_%s$',sMDYName,z,sMDYName ...
             ), ...
             'Interpreter','latex', ...
             'HorizontalAlignment','right')
@@ -222,10 +246,11 @@ if doPlotMD
         % mean difference line
         muDLine = refline(0,muD); % mean difference
         muDLine.Color = 'k';
-        text(xl(2)-padding/2,muD+padding/2,'$\overline{d}$', ...
+        text(xl(2)-padding/2,muD+padding/2, ...
+            sprintf('$\\overline{%s}$',sMDYName), ...
             'Interpreter','latex', ...
             'HorizontalAlignment','right')
-        muDLine.UserData = dcStruct([],[],'mean difference', ...
+        muDLine.UserData = dcStruct([],[],['mean ' sMDYLongName], ...
             [num2str(100*(1-a)) '% CI = [' ...
             num2str(muDCI(1)) ', ' num2str(muDCI(2)) ']'], ...
             @dcXY);
@@ -254,31 +279,37 @@ if doPlotMD
         lsMuDLine.DisplayName = ...
             'least-squares';
         lsMuDLine.UserData = dcStruct( ...
-            'least-squares line of mean and difference', ...
+            ['least-squares line of mean and ' sMDYLongName], ...
             [], [], [], ... %TODO add parameters from polyfit like in correlation plot
             @dcXY);
         legEntries(end+1) = lsMuDLine;
     end
     
-    % zero difference line
-    line0 = refline(0,0);
-    line0.Color = [.75 .75 .75];
-    line0.LineStyle = '--';
-    line0.DisplayName = 'line of equality';
-    line0.UserData = dcStruct(line0.DisplayName,[],[],[],@dcXY);
-    legEntries(end+1) = line0;
-    
     % axes labels
     xlabel(sprintf('mean \\itµ = (M_1+M_2)/2')) %TODO check µ
-    ylabel(sprintf('difference \\itd = M_1-M_2'))
-    title(sprintf(['Mean-difference plot of (%u observation pairs):\n' ...
-        ' \\rm\\itM_1\\rm: %s\n \\itM_2\\rm: %s'],n,xName,yName))
+    if doRatio
+        strY = sprintf('%s \\itR = M_1/M_2',sMDYLongName);
+    else
+        strY = sprintf('%s \\itd = M_1-M_2',sMDYLongName);
+    end
+    ylabel(strY)
+    title(sprintf( ...
+        ['Mean-%s plot of (%u observation pairs):\n' ...
+        ' \\rm\\itM_1\\rm: %s\n \\itM_2\\rm: %s'], ...
+        sMDYLongName,n,xName,yName))
     
     % legend
     legend(legEntries,'Location','SouthWest')
     
     % reorder plot children
     axMD.Children = axMD.Children([end 1:end-1]);
+    
+    % % equalise axes
+    % axis equal
+    
+    % make sure title is in visible figure area
+    op = axMD.OuterPosition;
+    axMD.OuterPosition(4) = min(op(4)+op(2),1) - op(2);
 end
 
 %% set data cursor update function for figure(s)
