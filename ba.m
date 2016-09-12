@@ -70,6 +70,17 @@ function varargout = ba(varargin)
 %   Example: 'Exclude',[1, 3, 4] excludes elements 1, 3 and 4 from x and y.
 %   Example: 'Exclude',[0 0 1 0 1 1 0 0 1] excludes the true elements from
 %   x and y.
+%   
+%   'Transform': Function to transform data with
+%   @(x) x (default) | function handle
+%   Function to transform data with before further analysis, specified as a
+%   function handle of one variable. By default, no transformation is
+%   performed. The function handle should accept a vector input. Bland and
+%   Altman suggest in their 1999 article (see p. 144) only the logarithmic
+%   transformation should be used, i.e. specify 'Transform',@log. Other
+%   transforms are not easily relatable to the actual measurements, hence
+%   their recommendation.
+%   Example: 'Transform',@log transforms x to log(x) and y to log(y).
 %
 %   'PlotMeanDifference': Create mean-difference plot
 %   false (default) | true
@@ -215,6 +226,7 @@ p.addParameter('PlotCorrelation',false,@validatelogical)
 p.addParameter('Exclude',[],@validatelogical)
 p.addParameter('PlotStatistics','none',@ischar)
 p.addParameter('PlotLeastSquares',false,@validatelogical)
+p.addParameter('Transform',@(x) x,@(t) isa(t,'function_handle')|ischar(t))
 
 % parse inputs
 parse(p,in{:})
@@ -266,6 +278,25 @@ switch lower(PlotStatistics)
         error 'Unknown value for the ''PlotStatistics'' name-value pair.'
 end
 
+% transformation function
+transFun = Transform;
+if ischar(transFun), transFun = str2func(transFun); end
+doRatio = false;
+switch lower(char(transFun)) % detect supported transformations
+    case 'log'
+        if any(strcmpi(p.UsingDefaults,'XName'))
+            xName = ['Log ' xName];
+        end
+        if any(strcmpi(p.UsingDefaults,'YName'))
+            yName = ['Log ' yName];
+        end
+        x = transFun(x);
+        y = transFun(y);
+    case 'ratio'
+        doRatio = true;
+    otherwise % no transformation
+end
+
 % least-squares line
 doPlotLS = logical(PlotLeastSquares);
 
@@ -274,7 +305,8 @@ out = baloa( ...
     x, xName, y, yName, a, ...
     doPlotMD, axMD, ...
     doPlotC, axC, ...
-    doPlotBasicStats, doPlotExtStats, doPlotLS);
+    doPlotBasicStats, doPlotExtStats, doPlotLS, ...
+    doRatio);
 
 %% output
 if nargout, varargout = out; end
