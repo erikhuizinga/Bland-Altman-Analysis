@@ -50,27 +50,27 @@ J1 = J(:,1);
 S1 = S(:,1);
 
 s = ba(J1,S1);
-muD = s.muD; % mean difference (bias)
-sD = s.sD; % standard deviation of difference
-loa = s.loa; % limits of agreement
+muD = s.difference.mu; % mean difference (bias)
+sD = s.difference.s; % standard deviation of difference
+loaD = s.difference.loa; % limits of agreement
 display(muD) % article: -16.29 mmHg
 display(sD) % article: 19.61 mmHg
-display(loa) % article: [-54.7, 22.1] mmHg
+display(loaD) % article: [-54.7, 22.1] mmHg
 
 % exclude subjects 78 and 80 (article page number 139)
 fprintf '\nExcluding subjects 78 and 80 (outliers):\n'
 iEx = [78,80];
 lEx = (n==78) | (n==80); % alternative: logical indices
 s = ba(J1,S1, 'Exclude',iEx);
-muD = s.muD;
-loa = s.loa;
+muD = s.difference.mu;
+loaD = s.difference.loa;
 display(muD) % article: -14.9 mmHg
 % Erratum: a small error, probably a typo, exist in the original article.
 % Note the difference between the muD and the article's mean difference.
 % However, because the limits of agreement are the same and, of course, the
 % mean difference equals the mean of the limits of agreement, thus the
 % calculation here appears to be correct.
-display(loa) % article: [-43.6, 15.0] mmHg
+display(loaD) % article: [-43.6, 15.0] mmHg
 
 %% 2.1 Graphical presentation of agreement (article page 140)
 disp 'Section 2.1 Graphical presentation of agreement'
@@ -80,8 +80,8 @@ disp 'Section 2.1 Graphical presentation of agreement'
 % Figure 1 corresponds to article figure 1, figure 2 corresponds to article
 % figure 2.
 f = figures(2);
-s = ba(f, J1,S1, 'XName',JName, 'YName',SName, 'PlotAll',true);
-rSMuD = s.rSMuD;
+s = ba(f, J1,S1, 'XName',JName, 'YName',SName, 'PlotDefault',true);
+rSMuD = s.difference.rSMu;
 % Article: 0.07 (p. 140), here -0.03, so an error exists either here or in
 % the article.
 display(rSMuD); % Spearman rank correlation between mean and difference
@@ -103,12 +103,12 @@ clf % Clear figure 3 and recreate it with additional confidence intervals
 % (not shown in article).
 s = ba(gcf, J1,S1, 'XName',JName, 'YName',SName, ...
     'PlotMeanDifference',true, 'PlotStatistics','extended');
-muDCI = s.muDCI;
-loaCI = s.loaCI; % confidence interval of the loa
+muDCI = s.difference.muCI;
+loaDCI = s.difference.loaCI; % confidence interval of the loa
 % article loaCI (p. 142):
 % [-61.9, 14.9
 %  -47.5, 29.3]
-display(loaCI)
+display(loaDCI)
 % article muDCI (p. 142): [-20.5 -12.1]
 display(muDCI)
 
@@ -120,7 +120,7 @@ disp(['See also figure ' num2str(fn) '.'])
 %% 3 Relationship between difference and magnitude (article p. 142)
 disp 'Section 3 Relationship between difference and magnitude'
 
-% load data from Table 2 in the article
+% load Table 2 (article p. 143)
 load pvdata
 
 n = PVData(:,1);
@@ -145,6 +145,8 @@ ba(ax(2), Nadler,Hurley, ...
 % In one line of code it would have been:
 % ba(ax, Hurley,Nadler, 'PlotAll',true)
 % But figure 4b has the vertical axis flipped, so this does not work.
+% Note that there is significant positive Spearman rank correlation
+% between difference and mean.
 
 % some text output
 fn = f.Number;
@@ -167,26 +169,25 @@ s = ba(ax(2), Nadler,Hurley, ...
     'PlotMeanDifference',true, ...
     'PlotStatistics','basic', ...
     'Transform',@log);
-logMuD = s.muD;
+logMuD = s.difference.mu;
 display(logMuD) % article: 0.099
-logLoa = s.loa;
-display(logLoa) % article: [0.056, 0.141]
-logLoaCI = s.loaCI;
-lowerLogLoaCI = logLoaCI(:,1); % lower LOA CI
-display(lowerLogLoaCI) % article [0.049, 0.064]
+logLoaD = s.difference.loa;
+display(logLoaD) % article: [0.056, 0.141]
+logLoaDCI = s.difference.loaCI;
+lowerLogLoaDCI = logLoaDCI(:,1); % lower LOA CI
+display(lowerLogLoaDCI) % article [0.049, 0.064]
 
 % backtransformation of results
 muD = exp(logMuD);
 display(muD) % article: 1.11
-loa = exp(logLoa);
-display(loa) % article: [1.06, 1.15]
+loaD = exp(logLoaD);
+display(loaD) % article: [1.06, 1.15]
 
 % ratio mean-difference plot
 ba(figure, Nadler,Hurley, ...
     'XName','Plasma volume (Nadler) (%)', ...
     'YName','Plasma volume (Hurley) (%)', ...
-    'PlotMeanDifference',true, 'PlotStatistics','basic', ...
-    'Transform','ratio' );
+    'PlotMeanRatio',true, 'PlotStatistics','basic');
 
 % some text output
 f = [f;gcf];
@@ -195,3 +196,34 @@ disp(['See also figures [' num2str(fn) '].'])
 
 %% 3.2 A regression approach for nonuniform differences (article p. 145)
 disp 'Section 3.2 A regression approach for nonuniform differences'
+
+% load Table 3 (article p. 146)
+load fcdata
+Trig = FCData(:,1);
+Gerber = FCData(:,2);
+
+% article Figure 7 (p. 147)
+f = figure;
+ax(1) = subplot(1,2,1);
+ax(2) = subplot(1,2,2);
+ba(ax(1), ...
+    Gerber,Trig, ...
+    'XName','Fat (g/100 ml; Gerber)', ...
+    'YName','Fat (g/100 ml; Trig.)', ...
+    'PlotCorrelation',true)
+ba(ax(2), ...
+    Trig,Gerber, ...
+    'XName','Fat (g/100 ml; Gerber)', ...
+    'YName','Fat (g/100 ml; Trig.)', ...
+    'PlotMeanDifference',true)
+
+% article figure 8 (p. 148)
+ba(figure, Trig,Gerber, ...
+    'XName','Fat (g/100 ml; Gerber)', ...
+    'YName','Fat (g/100 ml; Trig.)', ...
+    'PlotMeanDifference',true, 'PlotStatistics','regression')
+
+% some text output
+f = [f;gcf];
+fn = [f.Number];
+disp(['See also figures [' num2str(fn) '].'])

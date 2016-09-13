@@ -97,10 +97,10 @@ function varargout = ba(varargin)
 %   Name-Value pair argument as true creates the correlation plot,
 %   regardless of the 'PlotCorrelation' value.
 %
-%   'PlotAll': Create all plots
+%   'PlotDefault': Create default plots
 %   false (default) | true
 %   Create mean-difference and correlation plots if the specified value is
-%   true. Setting 'PlotAll' to true overrides any value given to the
+%   true. Setting 'PlotDefault' to true overrides any value given to the
 %   'PlotMeanDifference' and 'PlotCorrelation' Name-Value pair arguments.
 %   However, setting it to false does not override the individual plot
 %   Name-Value pair arguments.
@@ -133,30 +133,57 @@ function varargout = ba(varargin)
 %   Output
 %   The only output argument s is optional. It is a scalar structure
 %   containing multiple fields with descriptive statistics about the
-%   agreement of x and y. s contains the following fields:
+%   agreement of x and y. s contains two fields, being difference and
+%   ratio. These field are structures themselves, containing the statistics
+%   about the differences and ratios (resp.) between observations in x and
+%   y. The fields in difference and ratio are (below, the word statistic
+%   refers to either difference or ratio):
 %   
-%   muD: the mean difference between x and y, also called the bias.
+%   mu: the mean statistic between x and y, also called the bias.
+%   Example: s.difference.mu is the mean difference.
 % 
-%   muDCI: the 95% (default, depending on alpha) confidence interval of
-%   the mean difference.
+%   muCI: the 95% (default, depending on alpha) confidence interval of
+%   the mean statistic.
+%   Example: s.ratio.muCI is the confidence interval of the mean ratio.
 % 
 %   loa: the 95% (default, depending on alpha) limits of agreement, a 2
 %   element vector. The first element is the lower limit of agreement, the
 %   second is the upper.
+%   Example: s.difference.loa(1) is the lower limit of agreement of the
+%   differences.
 % 
 %   loaCI: the 95% (default, depending on alpha) confidence interval of the
 %   limits of agreement, a 2x2 matrix. The first column corresponds to
 %   lower limit of agreement, the second to the upper limit. The first and
 %   second row correspond to the lower and upper confidence interval bound
 %   respectively.
+%   Ecample: s.ratio.loaCI(:,2) is the confidence interval of the upper
+%   limit of agreement of the ratios.
 % 
-%   sD: the standard deviation of the differences.
+%   s: the standard deviation of the statistic.
+%   Example: s.difference.s is the standard deviation of the differences.
 % 
-%   rSMuD: the Spearman rank correlation between mean and difference.
+%   rSMu: the Spearman rank correlation between mean and statistic.
+%   Example: s.ratio.rSMu is the Spearman rank correlation between mean and
+%   the ratios.
 % 
-%   pRSMuD: the p-value of the Spearman rank correlation for testing the
+%   pRSMu: the p-value of the Spearman rank correlation for testing the
 %   hypothesis of no correlation against the alternative that there is a
 %   nonzero correlation. %TODO also output rhoXY,pRhoXY
+%   Example: s.difference.pRSMu is the p-value of the Spearman rank
+%   correlation between mean and difference, to test the hypothesis of no
+%   correlation against the alternative of nonzero correlation.
+%   
+%   polyMu: the polynomial coefficients of the simple linear regression of
+%   the statistic on the mean. The first element of polyMu is the slope,
+%   the second the intercept.
+%   Example: s.ratio.polyMu(2) is the intercept of the simple linear
+%   regression line of the ratio on the mean.
+%   
+%   msePolyMu: the mean squared error (MSE) of the simple linear regression
+%   of the statistic on the mean.
+%   Example: s.difference.msePolyMu is the MSE of the simple linear
+%   regression of the difference on the mean.
 %
 %   About
 %   This MATLAB function is an implementation of the methods in the 1999
@@ -220,8 +247,9 @@ p.addRequired('y',@isnumeric)
 p.addOptional('a',.05,@isnumeric)
 p.addParameter('XName',inputname(ixname),@ischar)
 p.addParameter('YName',inputname(iyname),@ischar)
-p.addParameter('PlotAll',false,@validatelogical)
+p.addParameter('PlotDefault',false,@validatelogical)
 p.addParameter('PlotMeanDifference',false,@validatelogical)
+p.addParameter('PlotMeanRatio',false,@validatelogical)
 p.addParameter('PlotCorrelation',false,@validatelogical)
 p.addParameter('Exclude',[],@validatelogical)
 p.addParameter('PlotStatistics','none',@ischar)
@@ -253,8 +281,8 @@ xName = strjoin(XName,', ');
 yName = strjoin(YName,', ');
 
 % validate plot arguments
-[doPlotMD,axMD,doPlotC,axC] = validatePlotArgs( ...
-    PlotAll, PlotMeanDifference, PlotCorrelation, h ...
+[doPlotMD,axMD,doPlotMR,axMR,doPlotC,axC] = validatePlotArgs( ...
+    PlotDefault, PlotMeanDifference, PlotMeanRatio, PlotCorrelation, h ...
     );
 
 % exclude samples
@@ -264,24 +292,12 @@ x(lex) = [];
 y(lex) = [];
 
 % statistics set to plot
-switch lower(PlotStatistics)
-    case 'none'
-        doPlotBasicStats = false;
-        doPlotExtStats = false;
-    case 'basic'
-        doPlotBasicStats = true;
-        doPlotExtStats = false;
-    case 'extended'
-        doPlotBasicStats = true;
-        doPlotExtStats = true;
-    otherwise
-        error 'Unknown value for the ''PlotStatistics'' name-value pair.'
-end
+[doPlotBasicStats,doPlotExtStats,doPlotRegStats] = ...
+    parseStatArgs(PlotStatistics);
 
 % transformation function
 transFun = Transform;
 if ischar(transFun), transFun = str2func(transFun); end
-doRatio = false;
 switch lower(char(transFun)) % detect supported transformations
     case 'log'
         if any(strcmpi(p.UsingDefaults,'XName'))
@@ -292,8 +308,6 @@ switch lower(char(transFun)) % detect supported transformations
         end
         x = transFun(x);
         y = transFun(y);
-    case 'ratio'
-        doRatio = true;
     otherwise % no transformation
 end
 
@@ -304,9 +318,9 @@ doPlotLS = logical(PlotLeastSquares);
 out = baloa( ...
     x, xName, y, yName, a, ...
     doPlotMD, axMD, ...
+    doPlotMR, axMR, ...
     doPlotC, axC, ...
-    doPlotBasicStats, doPlotExtStats, doPlotLS, ...
-    doRatio);
+    doPlotBasicStats, doPlotExtStats, doPlotRegStats, doPlotLS);
 
 %% output
 if nargout, varargout = out; end
