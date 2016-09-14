@@ -1,4 +1,4 @@
-function [pRhoXY,rhoXY,polyXY,msePXY] = statC(xok,yok,z)
+function [pRhoXY,rhoXY,polyXY,msePXY] = statC(xok,yok,z,doConReg)
 % correlation statistics
 
 % correlation
@@ -7,5 +7,5 @@ rhoXY = rhoXY(1,2);
 pRhoXY = pRhoXY(1,2);
 
 % linear regression statistics
-[polyXY,msePXY] = baLinReg(xok,yok,z);
+[polyXY,msePXY] = baLinReg(xok,yok,z,doConReg);
 end

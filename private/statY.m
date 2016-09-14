@@ -1,5 +1,5 @@
 function [loaCI,loa,muY,muYCI,eLoaY,eMuY,sY,polyMuY,msePolyMuY, ...
-    sResPolyMuY,polyLLoa,polyULoa] = statY(mu,y,n,z,t)
+    sResPolyMuY,polyLLoa,polyULoa] = statY(mu,y,n,z,t,doConReg)
 % Y statistics
 % Y can be difference or ratio
 
@@ -49,5 +49,6 @@ loaCI = [loa;loa] + eLoaY*[-1 -1;1 1];
 % LOA = [loaCI(1,:);loa;loaCI(2,:)]; % optional 3x2 matrix form
 
 % linear regression of mean and Y
-[polyMuY,msePolyMuY,sResPolyMuY,polyLLoa,polyULoa] = baLinReg(mu,y,z);
+[polyMuY,msePolyMuY,sResPolyMuY,polyLLoa,polyULoa] = ...
+    baLinReg(mu,y,z,doConReg);
 end

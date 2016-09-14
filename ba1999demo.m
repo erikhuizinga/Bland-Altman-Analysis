@@ -33,7 +33,7 @@ pth = fileparts(mfilename('fullpath'));
 addpath(fullfile(pth,'ba1999data'))
 
 % load Table 1 (article p. 137-8)
-load bpdata
+load bpdata % systolic blood pressure (mmHG) data
 
 n = BPData(:,1); % subject number
 J = BPData(:,2:4); % three successive measurements by expert J
@@ -49,7 +49,10 @@ disp 'Section 2 Limits of agreement'
 J1 = J(:,1);
 S1 = S(:,1);
 
+% calculate Bland-Altman statistics
 s = ba(J1,S1);
+
+% show results
 muD = s.difference.mu; % mean difference (bias)
 sD = s.difference.s; % standard deviation of difference
 loaD = s.difference.loa; % limits of agreement
@@ -62,6 +65,8 @@ fprintf '\nExcluding subjects 78 and 80 (outliers):\n'
 iEx = [78,80];
 lEx = (n==78) | (n==80); % alternative: logical indices
 s = ba(J1,S1, 'Exclude',iEx);
+
+% show results
 muD = s.difference.mu;
 loaD = s.difference.loa;
 display(muD) % article: -14.9 mmHg
@@ -79,8 +84,13 @@ disp 'Section 2.1 Graphical presentation of agreement'
 % script was written with all other figures closed.
 % Figure 1 corresponds to article figure 1, figure 2 corresponds to article
 % figure 2.
-f = figures(2);
-s = ba(f, J1,S1, 'XName',JName, 'YName',SName, 'PlotDefault',true);
+f1_2 = figures(2);
+
+% Perform Bland-Altman Analysis and create both the correlation and
+% mean-difference graphs.
+s = ba(f1_2, J1,S1, 'XName',JName, 'YName',SName, 'PlotDefault',true);
+
+% show results
 rSMuD = s.difference.rSMu;
 % Article: 0.07 (p. 140), here -0.03, so an error exists either here or in
 % the article.
@@ -88,11 +98,15 @@ display(rSMuD); % Spearman rank correlation between mean and difference
 
 % Figure 3 is equal to figure 2, but has added limits of agreement. It
 % corresponds to article figure 3.
-ba(figure, J1,S1, 'XName',JName, 'YName',SName, ...
+f3 = figure;
+
+% Create the mean-difference graph and plot basic statistics, i.e. bias and
+% limits of agreement.
+ba(f3, J1,S1, 'XName',JName, 'YName',SName, ...
     'PlotMeanDifference',true, 'PlotStatistics','basic')
 
 % some text output
-f = [f;gcf];
+f = [f1_2;f3];
 fn = sort([f.Number]);
 disp(['See also figures [' num2str(fn) '].'])
 
@@ -101,8 +115,10 @@ disp 'Section 2.2 Precision of the estimated limits of agreement'
 
 clf % Clear figure 3 and recreate it with additional confidence intervals
 % (not shown in article).
-s = ba(gcf, J1,S1, 'XName',JName, 'YName',SName, ...
+s = ba(f3, J1,S1, 'XName',JName, 'YName',SName, ...
     'PlotMeanDifference',true, 'PlotStatistics','extended');
+
+% show results
 muDCI = s.difference.muCI;
 loaDCI = s.difference.loaCI; % confidence interval of the loa
 % article loaCI (p. 142):
@@ -113,7 +129,7 @@ display(loaDCI)
 display(muDCI)
 
 % some text output
-f = gcf;
+f = f3;
 fn = f.Number;
 disp(['See also figure ' num2str(fn) '.'])
 
@@ -121,26 +137,25 @@ disp(['See also figure ' num2str(fn) '.'])
 disp 'Section 3 Relationship between difference and magnitude'
 
 % load Table 2 (article p. 143)
-load pvdata
+load pvdata % plasma volume in (%) data
 
 n = PVData(:,1);
 Nadler = PVData(:,2);
 Hurley = PVData(:,3);
+NName = 'Plasma volume (Nadler) (%)';
+HName = 'Plasma volume (Hurley) (%)';
 
 % create figures 4a and 4b in the article
-f = figure;
+f4 = figure;
 ax(1) = subplot(1,2,1);
 ax(2) = subplot(1,2,2);
+
 % The following could be accomplished with one line of code, but the
 % graphs in the article are constructed a bit differently, so here we
 % create the graphs accordingly, but need to do it with two separate lines.
-ba(ax(1), Hurley,Nadler, ...
-    'XName','Plasma volume (Hurley) (%)', ...
-    'YName','Plasma volume (Nadler) (%)', ...
+ba(ax(1), Hurley,Nadler, 'XName',HName, 'YName',NName, ...
     'PlotCorrelation',true)
-ba(ax(2), Nadler,Hurley, ...
-    'XName','Plasma volume (Nadler) (%)', ...
-    'YName','Plasma volume (Hurley) (%)', ...
+ba(ax(2), Nadler,Hurley, 'XName',NName, 'YName',HName, ...
     'PlotMeanDifference',true)
 % In one line of code it would have been:
 % ba(ax, Hurley,Nadler, 'PlotAll',true)
@@ -149,26 +164,25 @@ ba(ax(2), Nadler,Hurley, ...
 % between difference and mean.
 
 % some text output
-fn = f.Number;
+fn = f4.Number;
 disp(['See also figure ' num2str(fn) '.'])
 
 %% 3.1 Logarithmic transformation (article p. 143)
 disp 'Section 3.1 Logarithmic transformation'
 
-% perform BAA using log transformation
-f = figure;
+f5 = figure;
 ax(1) = subplot(1,2,1);
 ax(2) = subplot(1,2,2);
-ba(ax(1), Hurley,Nadler, ...
-    'XName','Log plasma volume (Hurley)', ...
-    'YName','Log plasma volume (Nadler)', ...
+
+% perform BAA using log transformation
+ba(ax(1), Hurley,Nadler, 'XName',HName, 'YName',NName, ...
     'PlotCorrelation',true, 'Transform',@log)
-s = ba(ax(2), Nadler,Hurley, ...
-    'XName','Log plasma volume (Hurley)', ...
-    'YName','Log plasma volume (Nadler)', ...
+s = ba(ax(2), Nadler,Hurley, 'XName',NName, 'YName',HName, ...
     'PlotMeanDifference',true, ...
     'PlotStatistics','basic', ...
     'Transform',@log);
+
+% show results
 logMuD = s.difference.mu;
 display(logMuD) % article: 0.099
 logLoaD = s.difference.loa;
@@ -183,14 +197,14 @@ display(muD) % article: 1.11
 loaD = exp(logLoaD);
 display(loaD) % article: [1.06, 1.15]
 
-% ratio mean-difference plot
-ba(figure, Nadler,Hurley, ...
-    'XName','Plasma volume (Nadler) (%)', ...
-    'YName','Plasma volume (Hurley) (%)', ...
+f6 = figure;
+
+% Create the mean-ratio graph
+ba(f6, Nadler,Hurley, 'XName',NName, 'YName',HName, ...
     'PlotMeanRatio',true, 'PlotStatistics','basic');
 
 % some text output
-f = [f;gcf];
+f = [f5;f6];
 fn = sort([f.Number]);
 disp(['See also figures [' num2str(fn) '].'])
 
@@ -201,30 +215,35 @@ disp 'Section 3.2 A regression approach for nonuniform differences'
 load fcdata
 Trig = FCData(:,1);
 Gerber = FCData(:,2);
+TName = 'Fat (g/100 ml; Trig.)';
+GName = 'Fat (g/100 ml; Gerber)';
 
 % article Figure 7 (p. 147)
-f = figure;
+f7 = figure;
 ax(1) = subplot(1,2,1);
 ax(2) = subplot(1,2,2);
+
+% Perform default BAA on the data.
 ba(ax(1), ...
-    Gerber,Trig, ...
-    'XName','Fat (g/100 ml; Gerber)', ...
-    'YName','Fat (g/100 ml; Trig.)', ...
+    Gerber,Trig, 'XName',GName, 'YName',TName, ...
     'PlotCorrelation',true)
 ba(ax(2), ...
-    Trig,Gerber, ...
-    'XName','Fat (g/100 ml; Gerber)', ...
-    'YName','Fat (g/100 ml; Trig.)', ...
+    Trig,Gerber, 'XName',TName, 'YName',GName, ...
     'PlotMeanDifference',true)
 
 % article figure 8 (p. 148)
-ba(figure, Trig,Gerber, ...
-    'XName','Fat (g/100 ml; Gerber)', ...
-    'YName','Fat (g/100 ml; Trig.)', ...
-    'PlotMeanDifference',true, 'PlotStatistics','regression')
+f8 = figure;
+
+% Perform BAA, but now plot the simple linear regression line of the
+% difference on the mean instead of a constant bias. The corresponding 95%
+% limits of agreement are plotted as well. In the article, the residuals of
+% this regression line are not assumed to be significantly associated with 
+ba(f8, Trig,Gerber, 'XName',TName, 'YName',GName, ...
+    'PlotMeanDifference',true, ...
+    'PlotStatistics','regression', 'ConstantResidualVariance',false)
 
 % some text output
-f = [f;gcf];
+f = [f7;f8];
 fn = [f.Number];
 disp(['See also figures [' num2str(fn) '].'])
 

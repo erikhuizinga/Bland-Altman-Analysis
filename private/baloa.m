@@ -3,7 +3,8 @@ function varargout = baloa( ...
     doPlotMD, axMD, ...
     doPlotMR, axMR, ...
     doPlotC, axC, ...
-    doPlotBasicStats, doPlotExtStats, doPlotRegStats, ...
+    doPlotBasicStats, doPlotExtStats, ...
+    doPlotRegStats, doConReg, ...
     doPlotLS, ...
     doRepeated)
 %% preparation
@@ -57,12 +58,12 @@ t = Tinv(p,n-1); % inverse t-distribution at p
 % difference statistics
 d = xok-yok;
 [loaDCI,loaD,muD,muDCI,eLoaD,eMuD,sD,polyMuXYD,msePolyMuXYD, ...
-    sResPolyMuXYD,polyLLoaD,polyULoaD] = statY(muXY,d,n,z,t);
+    sResPolyMuXYD,polyLLoaD,polyULoaD] = statY(muXY,d,n,z,t,doConReg);
 
 % ratio statistics
 R = xok./yok;
 [loaRCI,loaR,muR,muRCI,eLoaR,eMuR,sR,polyMuXYR,msePolyMuXYR, ...
-    sResPolyMuXYR,polyLLoaR,polyULoaR] = statY(muXY,R,n,z,t);
+    sResPolyMuXYR,polyLLoaR,polyULoaR] = statY(muXY,R,n,z,t,doConReg);
 
 % mean-difference correlation statistics
 [rSMuD,pRSMuD] = corr(muXY,d,'type','Spearman'); %TODO make independent of stats toolbox?
@@ -71,7 +72,7 @@ R = xok./yok;
 [rSMuR,pRSMuR] = corr(muXY,R,'type','Spearman'); %TODO make independent of stats toolbox?
 
 % correlation statistics and linear regression %TODO linreg for muXY and d
-[pRhoXY,rhoXY,polyXY,msePXY] = statC(xok,yok,z);
+[pRhoXY,rhoXY,polyXY,msePXY] = statC(xok,yok,z,doConReg);
 
 %% graphics
 % correlation plot
@@ -86,7 +87,7 @@ if doPlotMD
     plotM(axMD,muXY,d,'difference','d',0,doPlotBasicStats,loaDCI, ...
         pRSMuD,rSMuD,loaD,a,z,muD,muDCI,doPlotExtStats,eLoaD,eMuD, ...
         doPlotLS,'-',n,xName,yName, ...
-        doPlotRegStats,polyMuXYD,msePolyMuXYD,polyLLoaD,polyULoaD)
+        doPlotRegStats,polyMuXYD,msePolyMuXYD,polyLLoaD,polyULoaD,doConReg)
 end
 
 % mean-ratio plot
@@ -94,7 +95,7 @@ if doPlotMR
     plotM(axMR,muXY,R,'ratio','R',1,doPlotBasicStats,loaRCI,pRSMuR, ...
         rSMuR,loaR,a,z,muR,muRCI,doPlotExtStats,eLoaR,eMuR,doPlotLS, ...
         '/',n,xName,yName, ...
-        doPlotRegStats,polyMuXYR,msePolyMuXYR,polyLLoaR,polyULoaR)
+        doPlotRegStats,polyMuXYR,msePolyMuXYR,polyLLoaR,polyULoaR,doConReg)
 end
 
 %% set data cursor update function for figure(s)
@@ -116,6 +117,7 @@ out.difference.rSMu = rSMuD;
 out.difference.pRSMu = pRSMuD;
 out.difference.polyMu = polyMuXYD;
 out.difference.msePolyMu = msePolyMuXYD;
+out.difference.sPolyResidual = sResPolyMuXYD;
 
 % ratio outputs
 out.ratio.mu = muR;
@@ -127,6 +129,7 @@ out.ratio.rSMu = rSMuR;
 out.ratio.pRSMu = pRSMuR;
 out.ratio.polyMu = polyMuXYR;
 out.ratio.msePolyMu = msePolyMuXYR;
+out.ratio.sPolyResidual = sResPolyMuXYR;
 
 % final output
 varargout = {{out}};

@@ -1,5 +1,5 @@
 function [polyXY,msePolyXY,sResPXY,polyLLoa,polyULoa] = ...
-    baLinReg(x,y,z)
+    baLinReg(x,y,z,doConReg)
 % simple linear regression statistics
 
 %% stage 1
@@ -24,12 +24,14 @@ R = abs(resPolyXY);
 polyXRes = polyfit(x,R,1); % article equation 3.2
 
 % limits of agreement (article equation 3.3)
-polyLLoa = polyXY - z*sqrt(pi/2)*polyXRes; % lower LOA
-polyULoa = polyXY + z*sqrt(pi/2)*polyXRes; % upper LOA
-
-% If polyXRes(1) is not significantly different from zero, which is a
-% matter clinical and statistical considerations, then the polynomial
-% coefficients for the lower and upper LOA become
-% polyLLoa = polyXY - z*sqrt(pi/2)*sResPXY
-% polyULoa = polyXY + z*sqrt(pi/2)*sResPXY
+if doConReg
+    % If polyXRes(1) is not significantly different from zero, which is a
+    % matter clinical and statistical considerations, then the polynomial
+    % coefficients for the lower and upper LOA become
+    polyLLoa = polyXY - [0, z*sResPXY];
+    polyULoa = polyXY + [0, z*sResPXY];
+else
+    polyLLoa = polyXY - z*sqrt(pi/2)*polyXRes; % lower LOA
+    polyULoa = polyXY + z*sqrt(pi/2)*polyXRes; % upper LOA
+end
 end
