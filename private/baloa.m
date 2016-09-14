@@ -3,7 +3,9 @@ function varargout = baloa( ...
     doPlotMD, axMD, ...
     doPlotMR, axMR, ...
     doPlotC, axC, ...
-    doPlotBasicStats, doPlotExtStats, doPlotRegStats, doPlotLS)
+    doPlotBasicStats, doPlotExtStats, doPlotRegStats, ...
+    doPlotLS, ...
+    doRepeated)
 %% preparation
 % multiFig = false;
 if doPlotMD || doPlotC || doPlotMR
@@ -17,6 +19,24 @@ if doPlotMD || doPlotC || doPlotMR
     % if numel(f)>1, multiFig = true; end
 else
     f = [];
+end
+
+if doRepeated % BAA for repeated measurements
+    % distinguish the number of replicates
+    if iscell(x) || iscell(y)
+        % Unequal number of replicates. This is certain , because if
+        % original input was a cell and contained equal number of
+        % observations per subject, it was converted to a matrix.
+        %TODO
+    else % x and y are not cells, thus matrices
+        if size(x,2) == size(y,2)
+            % equal number of replicates
+            
+        else
+            % unequal number of replicates
+            %TODO
+        end
+    end
 end
 
 % keep only values that can be used in calculations

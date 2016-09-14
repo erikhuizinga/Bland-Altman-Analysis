@@ -242,8 +242,8 @@ end
 
 % prepare parser
 p = inputParser;
-p.addRequired('x',@isnumeric)
-p.addRequired('y',@isnumeric)
+p.addRequired('x',@validateXY)
+p.addRequired('y',@validateXY)
 p.addOptional('a',.05,@isnumeric)
 p.addParameter('XName',inputname(ixname),@ischar)
 p.addParameter('YName',inputname(iyname),@ischar)
@@ -254,7 +254,7 @@ p.addParameter('PlotCorrelation',false,@validatelogical)
 p.addParameter('Exclude',[],@validatelogical)
 p.addParameter('PlotStatistics','none',@ischar)
 p.addParameter('PlotLeastSquares',false,@validatelogical)
-p.addParameter('Transform',@(x) x,@(t) isa(t,'function_handle')|ischar(t))
+p.addParameter('Transform',@(x) x,@(f) isa(f,'function_handle')|ischar(f))
 
 % parse inputs
 parse(p,in{:})
@@ -262,12 +262,7 @@ s2v(p.Results); %#ok<*NODEF>
 
 %% validate and preprocess inputs
 % x and y: measurements of two methods
-if numel(x)~=numel(y)
-    error 'Number of elements in x and y must be equal.'
-end
-% force column vectors
-if isvector(x), x = x(:); end
-if isvector(y), y = y(:); end
+[x,y,doRepeated] = parseXY(x,y);
 
 % alpha: significance level
 if ~isscalar(a) && a<0 && a>1
@@ -320,7 +315,9 @@ out = baloa( ...
     doPlotMD, axMD, ...
     doPlotMR, axMR, ...
     doPlotC, axC, ...
-    doPlotBasicStats, doPlotExtStats, doPlotRegStats, doPlotLS);
+    doPlotBasicStats, doPlotExtStats, doPlotRegStats, ...
+    doPlotLS, ...
+    doRepeated);
 
 %% output
 if nargout, varargout = out; end

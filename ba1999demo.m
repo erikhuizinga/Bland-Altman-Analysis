@@ -227,3 +227,18 @@ ba(figure, Trig,Gerber, ...
 f = [f;gcf];
 fn = [f.Number];
 disp(['See also figures [' num2str(fn) '].'])
+
+%% 4 The importance of repeatability (article p. 148)
+%TODO
+% disp 'Section 4 The importance of repeatability'
+
+%% 4.1 Estimating repeatability (article p. 149)
+%TODO
+% disp 'Section 4.1 Estimating repeatability'
+
+%% 5 Measuring agreement using repeated measurements (article p. 150)
+disp 'Section 5 Measuring agreement using repeated measurements'
+%% 5.1 Equal number of replicates (article p. 150)
+disp 'Section 5.1 Equal number of replicates'
+
+s = ba(J,S)
