@@ -1,7 +1,7 @@
 function [loaCI,loa,muY,muYCI,eLoaY,eMuY,sY,polyMuY,msePolyMuY, ...
     sResPolyMuY,polyLLoa,polyULoa] = statY(mu,y,n,z,t,doConReg)
 % Y statistics
-% Y can be difference or ratio
+% Y refers to either difference or ratio
 
 muY = mean(y); % mean of difference or ratio
 
