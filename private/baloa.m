@@ -22,6 +22,8 @@ else
     f = [];
 end
 
+% prepare for repeated measurements
+doEqRep = false; % do equal number of repeated measurement analysis
 if doRepeated % BAA for repeated measurements
     % distinguish the number of replicates
     if iscell(x) || iscell(y)
@@ -32,7 +34,7 @@ if doRepeated % BAA for repeated measurements
     else % x and y are not cells, thus matrices
         if size(x,2) == size(y,2)
             % equal number of replicates
-            
+            doEqRep = true;
         else
             % unequal number of replicates
             %TODO
