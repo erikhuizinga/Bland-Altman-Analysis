@@ -238,9 +238,13 @@ f8 = figure;
 % difference on the mean instead of a constant bias. The corresponding 95%
 % limits of agreement are plotted as well. In the article, the residuals of
 % this regression line are not assumed to be significantly associated with 
-ba(f8, Trig,Gerber, 'XName',TName, 'YName',GName, ...
+s = ba(f8, Trig,Gerber, 'XName',TName, 'YName',GName, ...
     'PlotMeanDifference',true, ...
-    'PlotStatistics','regression', 'ConstantResidualVariance',false)
+    'PlotStatistics','regression', 'ConstantResidualVariance',true);
+
+% show results
+sPolyResidual = s.difference.sPolyResidual;
+display(sPolyResidual) % article: 0.08033 (s_d on p. 148)
 
 % some text output
 f = [f7;f8];
