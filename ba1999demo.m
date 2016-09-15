@@ -265,3 +265,9 @@ disp 'Section 5 Measuring agreement using repeated measurements'
 disp 'Section 5.1 Equal number of replicates'
 
 s = ba(J,S)
+
+%% 5.2 Unequal number of replicates (article p. 154)
+disp 'Section 5.2 Unequal number of replicates'
+
+%% 5.3 Replicated data in pairs (article p. 156)
+disp 'Section 5.3 Replicated data in pairs'
