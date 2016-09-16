@@ -301,8 +301,8 @@ display(loaDCI); % BA1999 p. 153:
 % slightly larger value than 1.96, hence the article's estimation of the
 % confidence intervals of the LOA is too narrow.
 
-%% 5.2 Unequal number of replicates (article p. 154)
-disp 'Section 5.2 Unequal number of replicates'
+%% 5.2 Unequal numbers of replicates (article p. 154)
+disp 'Section 5.2 Unequal numbers of replicates'
 
 % load Table 4 (article p. 154)
 load codata
