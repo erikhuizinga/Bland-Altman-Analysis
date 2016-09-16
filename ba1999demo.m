@@ -304,5 +304,13 @@ display(loaDCI); % BA1999 p. 153:
 %% 5.2 Unequal number of replicates (article p. 154)
 disp 'Section 5.2 Unequal number of replicates'
 
+% load Table 4 (article p. 154)
+load codata
+n = COData(:,1);
+RV = COData(:,2);
+IC = FCData(:,3);
+RVName = 'Radionuclide ventriculography';
+ICName = 'Impedance cardiography';
+
 %% 5.3 Replicated data in pairs (article p. 156)
 disp 'Section 5.3 Replicated data in pairs'
