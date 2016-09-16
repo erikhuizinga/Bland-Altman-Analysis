@@ -7,12 +7,23 @@ function varargout = ba(varargin)
 %   biostatistics and chemistry.
 %
 %   Syntax
-%   s = BA(x,y) performs Bland-Altman Analysis on x and y, which are data
-%   from two measurement methods for the same quantity respectively. x and
-%   y must be numeric vectors of the same length. The calculations are done
-%   at a significance level of alpha = 0.05. Output s is a structure
-%   containing multiple fields with descriptive statistics about the
-%   agreement of x and y. For more details on s see section Output below.
+%   s = BA(x,y) performs Bland-Altman Analysis (BAA) on x and y, which are
+%   data from two measurement methods for the same quantity respectively. x
+%   and y can be of various classes and shapes:
+%    - If x and y are vectors, regular BAA is performed. Every element in x
+%      corresponds to the element in y at the same index. These pairs are
+%      individual observations on individual subjects.
+%    - If x and y are matrices, BAA for repeated measurements is performed.
+%      This means multiple measurements have been acquired per subject. The
+%      number of elements in x and y must be equal. Every row of x and y
+%      corresponds to the subjects, every column to the repeated
+%      observations.
+%   For more information about BAA for repeated measurements, see section
+%   Bland-Altman Analysis for repeated measurements below. The calculations
+%   are done at a significance level of alpha = 0.05. Output s is a
+%   structure containing multiple fields with descriptive statistics about
+%   the agreement of x and y. For more details on the fields in s see
+%   section Output below.
 %
 %   s = BA(x,y,alpha) specifies the significance level to calculate the
 %   limits of agreement and confidence intervals with. alpha must be a
@@ -21,20 +32,20 @@ function varargout = ba(varargin)
 %   intervals.
 %
 %   s = BA(__,Name,Value) specifies additional options using one or more
-%   name-value pair arguments, in addition to any of the input arguments in
+%   Name-Value pair arguments, in addition to any of the input arguments in
 %   the previous syntaxes. For example, you can specify to create the
-%   mean-difference plot using the 'PlotMeanDifference' name-value pair
+%   mean-difference plot using the 'PlotMeanDifference' Name-Value pair
 %   argument.
 %
 %   BA(__) can be used to plot the data without returning an output
 %   argument.
 %
 %   __ = BA(f,__) specifies the figure(s) f in which to create the plots
-%   specified with the corresponding name-value pairs. The number of
+%   specified with the corresponding Name-Value pairs. The number of
 %   figures in f must equal one or the number of specified plots.
 %
 %   __ = BA(ax,__) specifies the (array of) axes in which to create the
-%   plots specified with the corresponding name-value pairs. The number of
+%   plots specified with the corresponding Name-Value pairs. The number of
 %   axes in ax must equal the number of specified plots.
 %
 %   Examples
@@ -133,11 +144,20 @@ function varargout = ba(varargin)
 %   Output
 %   The only output argument s is optional. It is a scalar structure
 %   containing multiple fields with descriptive statistics about the
-%   agreement of x and y. s contains two fields, being difference and
-%   ratio. These field are structures themselves, containing the statistics
-%   about the differences and ratios (resp.) between observations in x and
-%   y. The fields in difference and ratio are (below, the word statistic
-%   refers to either difference or ratio):
+%   agreement of x and y. The number of fields in s varies depending on the
+%   input arguments. By default s contains three fields, being difference,
+%   x and y. A fourth field called ratio is present if the mean-ratio graph
+%   is requested using the 'PlotMeanRatio' Name-Value pair argument. Note
+%   that the difference field is returned regardless of the
+%   'PlotMeanDifference' Name-Value pair argument. Fields difference and
+%   ratio are described together below, after which fields x and y are
+%   described together too.
+% 
+%   The difference and ratio fields are structures themselves, containing
+%   the statistics about the differences and ratios (resp.) between
+%   observations in x and y. The fields in difference and ratio are
+%   described below (the word statistic refers to either difference or
+%   ratio):
 %   
 %   mu: the mean statistic between x and y, also called the bias.
 %   Example: s.difference.mu is the mean difference.
@@ -184,7 +204,39 @@ function varargout = ba(varargin)
 %   of the statistic on the mean.
 %   Example: s.difference.msePolyMu is the MSE of the simple linear
 %   regression of the difference on the mean.
+% 
+%   The other two fields of output argument s are x and y. These fields
+%   contain statistics about inputs x and y, that are calculated in BAA.
+%   The fields in x and y are (the word input referring to x or y):
+% 
+%   varWithin: the within-subject variance of the input. varWithin equals
+%   zero for regular BAA, but can be non-zero in BAA for repeated
+%   measurements.
+%   Example: s.x.varWithin is the within-subject variance of input x.
 %
+%   Bland-Altman Analysis for repeated measurements
+%   When performing regular limits of agreement (LOA) estimation through
+%   Bland-Altman Analysis (BAA) a number of implicit assumptions exists.
+%   One of these assumptions is that the individual observation pairs are
+%   independent. This is the case when every observed pair comes from a
+%   different subject. However, when multiple measurements are taken on the
+%   same individual, this assumption does not hold. The measurements on the
+%   same individual might depend on each other. For example, a subject's
+%   blood pressure is measured every minute using a sphygmomanometer. The
+%   observations of every minute will be quite correlated with the previous
+%   minute, i.e. the cross-covariance is high at the first (few) lag(s).
+%   Another more general example: consider 10 observations of a physical
+%   quantity. When these 10 observations are obtained from 10 different
+%   subjects (assuming these subjects are a representative sample of the
+%   population), the assumptions of regular BAA will have been met.
+%   However, if these 10 observations would come from one subject only, the
+%   calculations of (mean) difference (or ratio) will depend strongly on
+%   the within-subject variance of this particular subject. This is less
+%   informative about the performance of the two measurement methods and
+%   how they compare in general. Instead, this analysis tells us about the
+%   performance of the methods on this subject, which usually is not of
+%   interest in method comparison studies.
+%   
 %   About
 %   This MATLAB function is an implementation of the methods in the 1999
 %   article by Bland and Altman:
@@ -263,6 +315,8 @@ s2v(p.Results); %#ok<*NODEF>
 
 %% validate and preprocess inputs
 % x and y: measurements of two methods
+% parseXY validates and reshapes x and y for further analysis. It also
+% checks for repeated measurements analysis.
 [x,y,doRepeated] = parseXY(x,y);
 
 % alpha: significance level

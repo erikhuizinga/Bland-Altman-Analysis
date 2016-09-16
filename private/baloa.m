@@ -35,43 +35,59 @@ if doRepeated % BAA for repeated measurements
         if size(x,2) == size(y,2)
             % equal number of replicates
             doEqRep = true;
+            
+            % logical indices of elements to keep
+            lok = isfinite(x) & isnumeric(x) & isfinite(y) & isnumeric(y);
+            
+            % check shape after selection of elements
+            if isscalar(unique(sum(lok)))
+                % x and y remain matrices and the number of replicates
+                % stays equal
+                xok = x(lok);
+                yok = y(lok);
+                nCol = size(x,2);
+                xok = reshape(xok,[],nCol);
+                yok = reshape(yok,[],nCol);
+                n = size(xok,1);
+            else
+            end
         else
             % unequal number of replicates
             %TODO
         end
     end
+else
+    % keep only values that can be used in calculations
+    lok = isfinite(x) & isnumeric(x) & isfinite(y) & isnumeric(y);
+    n = nnz(lok);
+    xok = x(lok);
+    yok = y(lok);
 end
 
-% keep only values that can be used in calculations
-lok = isfinite(x) & isnumeric(x) & isfinite(y) & isnumeric(y);
-n = nnz(lok);
-xok = x(lok);
-yok = y(lok);
 
 %% calculations
-% mean statistics
-muXY = mean([xok,yok],2);
-
 % significance statistics
 p = 1-a/2;
 z = Ninv(p); % inverse normal distribution at p = 1-alpha/2
 t = Tinv(p,n-1); % inverse t-distribution at p
 
 % difference statistics
-d = xok-yok;
-[loaDCI,loaD,muD,muDCI,eLoaD,eMuD,sD,polyMuXYD,msePolyMuXYD, ...
-    sResPolyMuXYD,polyLLoaD,polyULoaD] = statY(muXY,d,n,z,t,doConReg);
-
-% ratio statistics
-R = xok./yok;
-[loaRCI,loaR,muR,muRCI,eLoaR,eMuR,sR,polyMuXYR,msePolyMuXYR, ...
-    sResPolyMuXYR,polyLLoaR,polyULoaR] = statY(muXY,R,n,z,t,doConReg);
+[muXY,d,varXW,varYW,loaDCI,loaD,muD,muDCI,eLoaD,eMuD,sD, ...
+    polyMuXYD,msePolyMuXYD,sResPolyMuXYD,polyLLoaD,polyULoaD] = ...
+    statMuS(xok,yok,'difference',n,z,t,doConReg,doEqRep);
 
 % mean-difference correlation statistics
 [rSMuD,pRSMuD] = corr(muXY,d,'type','Spearman'); %TODO make independent of stats toolbox?
 
-% mean-ratio correlation statistics
-[rSMuR,pRSMuR] = corr(muXY,R,'type','Spearman'); %TODO make independent of stats toolbox?
+% ratio statistics
+if doPlotMR % only calculated when mean-ratio graph is requested
+    [~,R,~,~,loaRCI,loaR,muR,muRCI,eLoaR,eMuR,sR, ...
+        polyMuXYR,msePolyMuXYR,sResPolyMuXYR,polyLLoaR,polyULoaR] = ...
+        statMuS(xok,yok,'ratio',n,z,t,doConReg,doEqRep);
+    
+    % mean-ratio correlation statistics
+    [rSMuR,pRSMuR] = corr(muXY,R,'type','Spearman'); %TODO make independent of stats toolbox?
+end
 
 % correlation statistics and linear regression %TODO linreg for muXY and d
 [pRhoXY,rhoXY,polyXY,msePXY] = statC(xok,yok,z,doConReg);
@@ -122,16 +138,22 @@ out.difference.msePolyMu = msePolyMuXYD;
 out.difference.sPolyResidual = sResPolyMuXYD;
 
 % ratio outputs
-out.ratio.mu = muR;
-out.ratio.muCI = muRCI;
-out.ratio.loa = loaR;
-out.ratio.loaCI = loaRCI;
-out.ratio.s = sR;
-out.ratio.rSMu = rSMuR;
-out.ratio.pRSMu = pRSMuR;
-out.ratio.polyMu = polyMuXYR;
-out.ratio.msePolyMu = msePolyMuXYR;
-out.ratio.sPolyResidual = sResPolyMuXYR;
+if doPlotMR
+    out.ratio.mu = muR;
+    out.ratio.muCI = muRCI;
+    out.ratio.loa = loaR;
+    out.ratio.loaCI = loaRCI;
+    out.ratio.s = sR;
+    out.ratio.rSMu = rSMuR;
+    out.ratio.pRSMu = pRSMuR;
+    out.ratio.polyMu = polyMuXYR;
+    out.ratio.msePolyMu = msePolyMuXYR;
+    out.ratio.sPolyResidual = sResPolyMuXYR;
+end
+
+% general outputs
+out.x.varWithin = varXW;
+out.y.varWithin = varYW;
 
 % final output
 varargout = {{out}};
