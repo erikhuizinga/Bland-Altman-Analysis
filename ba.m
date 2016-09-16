@@ -93,28 +93,34 @@ function varargout = ba(varargin)
 %   their recommendation.
 %   Example: 'Transform',@log transforms x to log(x) and y to log(y).
 %
-%   'PlotMeanDifference': Create mean-difference plot
+%   'PlotMeanDifference': Create mean-difference graph
 %   false (default) | true
-%   Create the mean-difference plot if the specified value is true. The
-%   mean-difference plot is a scatter plot of the difference between
-%   observations versus their mean. Specifying the 'PlotAll' Name-Value
+%   Create the mean-difference graph if the specified value is true. The
+%   mean-difference graph is a scatter plot of the difference between
+%   observations versus their mean. Specifying the 'PlotDefault' Name-Value
 %   pair argument as true creates the mean-difference plot, regardless of
 %   the 'PlotMeanDifference' value.
 %
-%   'PlotCorrelation': Create correlation plot
+%   'PlotMeanRatio': Create mean-ratio graph
 %   false (default) | true
-%   Create the correlation plot if the specified value is true. The
-%   correlation plot is a scatter plot of x and y. Specifying the 'PlotAll'
-%   Name-Value pair argument as true creates the correlation plot,
-%   regardless of the 'PlotCorrelation' value.
+%   Creat the mean-ratio graph if the specified value is true. The
+%   mean-ratio graph is a scatter plot of the ratio between observations
+%   versus their mean.
+%
+%   'PlotCorrelation': Create correlation graph
+%   false (default) | true
+%   Create the correlation graph if the specified value is true. The
+%   correlation graph is a scatter plot of x and y. Specifying the
+%   'PlotAll' Name-Value pair argument as true creates the correlation
+%   plot, regardless of the 'PlotCorrelation' value.
 %
 %   'PlotDefault': Create default plots
 %   false (default) | true
 %   Create mean-difference and correlation plots if the specified value is
 %   true. Setting 'PlotDefault' to true overrides any value given to the
 %   'PlotMeanDifference' and 'PlotCorrelation' Name-Value pair arguments.
-%   However, setting it to false does not override the individual plot
-%   Name-Value pair arguments.
+%   However, setting 'PlotDefault' to false does not override the
+%   individual plot Name-Value pair arguments.
 %
 %   'PlotStatistics': Add statistics to the created plots
 %   'none' (default) | 'basic' | 'extended'
