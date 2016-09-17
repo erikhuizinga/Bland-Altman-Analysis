@@ -263,8 +263,8 @@ disp(['See also figures [' num2str(fn) '].'])
 
 %% 5 Measuring agreement using repeated measurements (article p. 150)
 disp 'Section 5 Measuring agreement using repeated measurements'
-%% 5.1 Equal number of replicates (article p. 150)
-disp 'Section 5.1 Equal number of replicates'
+%% 5.1 Equal numbers of replicates (article p. 150)
+disp 'Section 5.1 Equal numbers of replicates'
 
 % perform Bland-Altman Analysis for repeated measurements. Notice the
 % syntax is identical to the regular BAA, but because of the matrix input

@@ -1,6 +1,6 @@
 function [muXY,S,varXW,varYW,loaCI,loa,muS,muSCI,eLoa,eMuS,sS,polyMuS,msePolyMuS, ...
     sResPolyMuS,polyLLoa,polyULoa] = ...
-    statMuS(x,y,SType,n,z,t,doConReg,doEqRep)
+    statMuS(x,y,SType,n,z,t,doConReg,repType)
 % mean-S statistics
 % S refers to either difference or ratio
 
@@ -8,10 +8,8 @@ switch SType
     case 'difference'
         fun = @minus;
     case 'ratio'
-        if doEqRep
-            error(['Ratio statistics not implemented for repeated ' ...
-                'measurements.'])
-        end
+        assert(strcmp(repType,'none'),['Ratio statistics not ' ...
+            'implemented for repeated measurements.'])
         fun = @rdivide;
 end
 
@@ -19,7 +17,7 @@ end
 muXY = mean([x(:), y(:)],2);
 S = fun(x(:),y(:));
 
-if doEqRep
+if repType
     % repeated measurements statistics
     
     % within subject means
@@ -31,26 +29,38 @@ if doEqRep
     muS = mean(muSW); % mean statistic, i.e. bias
     varMuSW = var(muSW); % $s_\overline{d}^2$ in BA1999 p. 151
     
-    % within subject variances
+    % within subject variances (zero for no replicates)
     varXW = mean(var(x,[],2)); % $s_{xw}^2$ in BA1999
     varYW = mean(var(y,[],2)); % idem for y
     
-    % number of observations
-    mx = size(x,2); % $m_x$ in BA1999
-    my = size(y,2); % idem for y
+    % number of replicates per subject
+    if iscell(x) % and thus iscell(y)
+        dbstack, keyboard %TODO verwijderen, testen
+        mx = cellfun(@numel,x);
+        my = cellfun(@numel,y);
+    else % x and y numeric matrices or vectors
+        mx = size(x,2)*ones(size(x,1),1); % $m_x$ in BA1999
+        my = mx; % because this point can only be reached in equal number
+        % of replicates
+    end
     
     % variance of the statistic
-    varS = varMuSW + (1-1/mx)*varXW + (1-1/my)*varYW; %BA1999 p. 151 eq. 5.3
+    varS = varMuSW + ...
+        ( 1 - sum(1./mx)/n ) * varXW + ...
+        ( 1 - sum(1./my)/n ) * varYW; % BA1999 p. 155 eq. 5.13
+    % This equation reduces to BA1999 p. 151 eq. 5.3 for
+    % isscalar(unique(mx)) & isscalar(unique(my)), which in turn reduces
+    % to simply varMuS for all(mx==1)&all(my==1), i.e. BA1999 Section 2
     sS = sqrt(varS);
-    
-    % confidence interval of the bias
-    varMuS = varS/n;
-    seMuS = sqrt(varMuS);
-    eMuS = t*seMuS; % muD error
-    muSCI = muS + eMuS*[-1 1];
     
     % loa of the statistic
     loa = muS + z*sS*[-1 1];
+    
+    % confidence interval of the bias
+    varMuS = varS/n; % BA1999 p. 153 ‘variance of the mean difference $\overline{d}$’
+    seMuS = sqrt(varMuS); % standard error of the bias
+    eMuS = t*seMuS; % muD error
+    muSCI = muS + eMuS*[-1 1];
     
     % variance of the variance of S and of the standard deviation of S
     varVarS = ... % BA1999 p. 152 eq. 5.8
