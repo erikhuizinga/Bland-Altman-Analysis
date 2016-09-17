@@ -8,7 +8,6 @@ function varargout = baloa( ...
     doPlotLS, ...
     doRepeated)
 %% preparation
-% multiFig = false;
 if doPlotMD || doPlotC || doPlotMR
     % if doMDPlot, f(1) = axMD.Parent; end
     % if doCPlot, f(2) = axC.Parent; end
