@@ -25,7 +25,7 @@ if iscell(v)
     nV = cellfun(@numel,v);
     if isscalar(unique(nV)), v = [v{:}]; end % convert to matrix
     doRepeated = true;
-elseif isvector(v)
+elseif isvector(v) % and not a cell
     v = v(:); % force column vectors
     doRepeated = false;
 else % v is a numeric matrix
