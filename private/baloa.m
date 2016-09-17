@@ -23,15 +23,24 @@ else
 end
 
 % prepare for repeated measurements
-doEqRep = false; % do equal number of repeated measurement analysis
+doEqRep = false; % do equal number of replicates analysis
+doUneqRep = false; % do unequal numbers of replicates analysis
 if doRepeated % BAA for repeated measurements
     % distinguish the number of replicates
     if iscell(x) || iscell(y)
         % Unequal number of replicates. This is certain , because if
         % original input was a cell and contained equal number of
-        % observations per subject, it was converted to a matrix.
+        % observations per subject, it was converted to a matrix by the
+        % call to parseXY.m in ba.m.
         %TODO
     else % x and y are not cells, thus matrices
+        % x and y must have the same dimensions:
+        %  - The number of rows is the number of subjects, which must be
+        %    equal for both x and y.
+        %  - The number of columns is the number of observations for all
+        %    subjects. There might be NaN or Inf elements in either x or y,
+        %    which yields the possibility of BAA for repeated measurements
+        %    with unequal number of replicates.
         if size(x,2) == size(y,2)
             % equal number of replicates
             doEqRep = true;
