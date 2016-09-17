@@ -22,57 +22,8 @@ else
     f = [];
 end
 
-% prepare for repeated measurements
-doEqRep = false; % do equal number of replicates analysis
-doUneqRep = false; % do unequal numbers of replicates analysis
-if doRepeated % BAA for repeated measurements
-    % distinguish the number of replicates
-    if iscell(x) || iscell(y)
-        % Unequal number of replicates. This is certain , because if
-        % original input was a cell and contained equal number of
-        % observations per subject, it was converted to a matrix by the
-        % call to parseXY.m in ba.m.
-        %TODO
-    else % x and y are not cells, thus matrices
-        % x and y must have the same dimensions:
-        %  - The number of rows is the number of subjects, which must be
-        %    equal for both x and y.
-        %  - The number of columns is the number of observations for all
-        %    subjects. There might be NaN or Inf elements in either x or y,
-        %    which yields the possibility of BAA for repeated measurements
-        %    with unequal number of replicates.
-        if size(x,2) == size(y,2)
-            % equal number of replicates
-            doEqRep = true;
-            
-            % logical indices of elements to keep
-            lok = isfinite(x) & isnumeric(x) & isfinite(y) & isnumeric(y);
-            
-            % check shape after selection of elements
-            if isscalar(unique(sum(lok)))
-                % x and y remain matrices and the number of replicates
-                % stays equal
-                xok = x(lok);
-                yok = y(lok);
-                nCol = size(x,2);
-                xok = reshape(xok,[],nCol);
-                yok = reshape(yok,[],nCol);
-                n = size(xok,1);
-            else
-            end
-        else
-            % unequal number of replicates
-            %TODO
-        end
-    end
-else
-    % keep only values that can be used in calculations
-    lok = isfinite(x) & isnumeric(x) & isfinite(y) & isnumeric(y);
-    n = nnz(lok);
-    xok = x(lok);
-    yok = y(lok);
-end
-
+% check and prepare for repeated measurements
+[xok,yok,n,repType] = prepRep(x,y,doRepeated);
 
 %% calculations
 % significance statistics
@@ -83,7 +34,7 @@ t = Tinv(p,n-1); % inverse t-distribution at p
 % difference statistics
 [muXY,d,varXW,varYW,loaDCI,loaD,muD,muDCI,eLoaD,eMuD,sD, ...
     polyMuXYD,msePolyMuXYD,sResPolyMuXYD,polyLLoaD,polyULoaD] = ...
-    statMuS(xok,yok,'difference',n,z,t,doConReg,doEqRep);
+    statMuS(xok,yok,'difference',n,z,t,doConReg,repType);
 
 % mean-difference correlation statistics
 [rSMuD,pRSMuD] = corr(muXY,d,'type','Spearman'); %TODO make independent of stats toolbox?
@@ -92,7 +43,7 @@ t = Tinv(p,n-1); % inverse t-distribution at p
 if doPlotMR % only calculated when mean-ratio graph is requested
     [~,R,~,~,loaRCI,loaR,muR,muRCI,eLoaR,eMuR,sR, ...
         polyMuXYR,msePolyMuXYR,sResPolyMuXYR,polyLLoaR,polyULoaR] = ...
-        statMuS(xok,yok,'ratio',n,z,t,doConReg,doEqRep);
+        statMuS(xok,yok,'ratio',n,z,t,doConReg,repType);
     
     % mean-ratio correlation statistics
     [rSMuR,pRSMuR] = corr(muXY,R,'type','Spearman'); %TODO make independent of stats toolbox?
