@@ -28,9 +28,6 @@ if doRepeated % BAA for repeated measurements, determined by parseXY
         %    of BAA for repeated measurements with unequal number of
         %    replicates.
         
-        % logical indices of elements to keep
-        lok = isfinite(x) & isnumeric(x) & isfinite(y) & isnumeric(y);
-        
         % check shape after selection of elements
         if isscalar(unique(sum(lok,2)))
             % x and y contain the same number of replicates per subject,
@@ -50,16 +47,14 @@ if doRepeated % BAA for repeated measurements, determined by parseXY
             % x and y need to be reshaped into cells, every row a subject
             % and every cell a vector of replicates
             for r = flip(find(any(lok,2))).'
-                xok{r,1} = x(r,lok(r,:));
-                yok{r,1} = y(r,lok(r,:));
+                xok{r,1} = x(r,lok(r,:)); %#ok<AGROW>
+                yok{r,1} = y(r,lok(r,:)); %#ok<AGROW>
             end
-            reptype = 'unequal';
+            repType = 'unequal';
             n = numel(xok);
         end
     end
 else % no repeated measurements
-    % keep only values that can be used in calculations
-    lok = isfinite(x) & isnumeric(x) & isfinite(y) & isnumeric(y);
     n = nnz(lok);
     xok = x(lok);
     yok = y(lok);

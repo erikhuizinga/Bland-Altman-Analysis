@@ -189,7 +189,7 @@ logLoaD = s.difference.loa;
 display(logLoaD) % article: [0.056, 0.141]
 logLoaDCI = s.difference.loaCI;
 lowerLogLoaDCI = logLoaDCI(:,1); % lower LOA CI
-display(lowerLogLoaDCI) % article [0.049, 0.064]
+display(lowerLogLoaDCI) % article [0.049; 0.064]
 
 % backtransformation of results
 muD = exp(logMuD);
@@ -308,7 +308,7 @@ disp 'Section 5.2 Unequal numbers of replicates'
 load codata
 n = COData(:,1);
 RV = COData(:,2);
-IC = FCData(:,3);
+IC = COData(:,3);
 RVName = 'Radionuclide ventriculography';
 ICName = 'Impedance cardiography';
 

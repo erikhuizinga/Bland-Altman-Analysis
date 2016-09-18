@@ -21,17 +21,17 @@ if repType
     % repeated measurements statistics
     
     % within subject means
-    muXW = mean(x,2); % $\overline{X}$ in BA1999
+    muXW = mean(x,2); % $\overline{X}$
     muYW = mean(y,2); % idem for Y
     
     % within subject mean statistic
-    muSW = fun(muXW,muYW); % $\overline{D}$ in BA1999
+    muSW = fun(muXW,muYW); % $\overline{d}$
     muS = mean(muSW); % mean statistic, i.e. bias
-    varMuSW = var(muSW); % $s_\overline{d}^2$ in BA1999 p. 151
+    varMuSW = var(muSW); % $s_\overline{d}^2$
     
     % within subject variances (zero for no replicates)
-    varXW = mean(var(x,[],2)); % $s_{xw}^2$ in BA1999
-    varYW = mean(var(y,[],2)); % idem for y
+    varXW = var(x,[],2); % elements in $s_{xw}^2$ in BA1999
+    varYW = var(y,[],2); % idem for y
     
     % number of replicates per subject
     if iscell(x) % and thus iscell(y)
@@ -39,18 +39,23 @@ if repType
         mx = cellfun(@numel,x);
         my = cellfun(@numel,y);
     else % x and y numeric matrices or vectors
-        mx = size(x,2)*ones(size(x,1),1); % $m_x$ in BA1999
+        mx = size(x,2)*ones(size(x,1),1); % $m_x$
         my = mx; % because this point can only be reached in equal number
         % of replicates
     end
     
+    % weights of the correction term in BA1999 p. 155 eq. 5.13
+    correctionTermXWeight = ( 1 - sum(1./mx)/n );
+    correctionTermYWeight = ( 1 - sum(1./my)/n );
+    % These weights reduce to those of BA1999 p. 151 eq. 5.3 for
+    % isscalar(unique(mx)) & isscalar(unique(my)) and reduce to zero for
+    % all(mx==1)&all(my==1), i.e. BA1999 section 2.
+    
     % variance of the statistic
+    % BA1999 p. 155 eq. 5.3 or 5.13
     varS = varMuSW + ...
-        ( 1 - sum(1./mx)/n ) * varXW + ...
-        ( 1 - sum(1./my)/n ) * varYW; % BA1999 p. 155 eq. 5.13
-    % This equation reduces to BA1999 p. 151 eq. 5.3 for
-    % isscalar(unique(mx)) & isscalar(unique(my)), which in turn reduces
-    % to simply varMuS for all(mx==1)&all(my==1), i.e. BA1999 Section 2
+        correctionTermXWeight * mean(varXW) + ...
+        correctionTermYWeight * mean(varYW); % Var$(D)$
     sS = sqrt(varS);
     
     % loa of the statistic
@@ -59,15 +64,39 @@ if repType
     % confidence interval of the bias
     varMuS = varS/n; % BA1999 p. 153 ‘variance of the mean difference $\overline{d}$’
     seMuS = sqrt(varMuS); % standard error of the bias
-    eMuS = t*seMuS; % muD error
+    eMuS = t*seMuS; % bias error
     muSCI = muS + eMuS*[-1 1];
     
-    % variance of the variance of S and of the standard deviation of S
-    varVarS = ... % BA1999 p. 152 eq. 5.8
-        2*varMuSW^2/(n-1) + ...
-        2*(mx-1)*varXW^2/n/mx^2 + ...
-        2*(my-1)*varYW^2/n/my^2;
-    varSS = varVarS/4/varS; % BA1999 p. 153 eq. 5.9
+    % % variance of the variance of S and of the standard deviation of S
+    % varVarS = ... % BA1999 p. 152 eq. 5.8
+    %     2*varMuSW^2/(n-1) + ...
+    %     2*(mx-1)*varXW^2/n/mx^2 + ...
+    %     2*(my-1)*varYW^2/n/my^2;
+    
+    % BA1999 p. 152 eq. 5.4, adjusted for unequal replicates
+    varVarXW = sum(2*varXW.^2./(mx-1))/n/n; % $var(s_{xw}^2)$
+    varVarYW = sum(2*varYW.^2./(my-1))/n/n; % idem for y
+    % note these reduce to eq. 5.4 for equal replicates
+    
+    % these are nan in case all(mx==1)&all(my==1)
+    if isnan(varVarXW); varVarXW = 0; end
+    if isnan(varVarYW); varVarYW = 0; end
+    
+    % BA1999 p. 152 eq. 5.5 and 5.6 adjusted for unequal replicates
+    varCorrectionTerm = ...
+        correctionTermXWeight^2 * varVarXW + ...
+        correctionTermYWeight^2 * varVarYW;
+    % This is the variance of the correction term in eq. 5.3/5.13, adjusted
+    % for unequal replicates.
+    
+    % BA1999 p. 152 eq. 5.7
+    varVarMuS = 2*varMuSW^2/(n-1);
+    
+    % BA1999 p. 152 eq. 5.8
+    varVarS = varVarMuS + varCorrectionTerm; % Var$(\hat{\sigma}_d^2)$
+    
+    % BA1999 p. 153 eq. 5.9
+    varSS = varVarS/4/varS; % Var$(\hat{\sigma}_d)$
     
     % variance of the LOA
     varLoa = varMuS + z^2*varSS; % BA1999 p. 153 eq. 5.10

@@ -111,8 +111,8 @@ if doPlotMR
 end
 
 % general outputs
-out.x.varWithin = varXW;
-out.y.varWithin = varYW;
+out.x.varWithin = mean(varXW);
+out.y.varWithin = mean(varYW);
 
 % final output
 varargout = {{out}};
