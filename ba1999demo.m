@@ -28,7 +28,9 @@ close all
 disp 'Demonstration of Bland-Altman analysis'
 
 %% load data
-% add data folder to path
+% Add data folder to path. The following line only works when running this
+% script or when the current directory is contains the ba19999data folder,
+% otherwise a warning is issued.
 pth = fileparts(mfilename('fullpath'));
 addpath(fullfile(pth,'ba1999data'))
 
@@ -93,7 +95,8 @@ s = ba(f1_2, J1,S1, 'XName',JName, 'YName',SName, 'PlotDefault',true);
 % show results
 rSMuD = s.difference.rSMu;
 % Article: 0.07 (p. 140), here -0.03, so an error exists either here or in
-% the article.
+% the article. Either way, the correlation is not significantly different
+% from zero: see s.difference.pRSMu.
 display(rSMuD); % Spearman rank correlation between mean and difference
 
 % Figure 3 is equal to figure 2, but has added limits of agreement. It
@@ -139,7 +142,7 @@ disp 'Section 3 Relationship between difference and magnitude'
 % load Table 2 (article p. 143)
 load pvdata % plasma volume in (%) data
 
-n = PVData(:,1);
+% n = PVData(:,1);
 Nadler = PVData(:,2);
 Hurley = PVData(:,3);
 NName = 'Plasma volume (Nadler) (%)';
@@ -147,8 +150,8 @@ HName = 'Plasma volume (Hurley) (%)';
 
 % create figures 4a and 4b in the article
 f4 = figure;
-ax(1) = subplot(1,2,1);
-ax(2) = subplot(1,2,2);
+ax(1) = subplot(2,1,1);
+ax(2) = subplot(2,1,2);
 
 % The following could be accomplished with one line of code, but the
 % graphs in the article are constructed a bit differently, so here we
@@ -171,8 +174,8 @@ disp(['See also figure ' num2str(fn) '.'])
 disp 'Section 3.1 Logarithmic transformation'
 
 f5 = figure;
-ax(1) = subplot(1,2,1);
-ax(2) = subplot(1,2,2);
+ax(1) = subplot(2,1,1);
+ax(2) = subplot(2,1,2);
 
 % perform BAA using log transformation
 ba(ax(1), Hurley,Nadler, 'XName',HName, 'YName',NName, ...
@@ -189,7 +192,7 @@ logLoaD = s.difference.loa;
 display(logLoaD) % article: [0.056, 0.141]
 logLoaDCI = s.difference.loaCI;
 lowerLogLoaDCI = logLoaDCI(:,1); % lower LOA CI
-display(lowerLogLoaDCI) % article [0.049, 0.064]
+display(lowerLogLoaDCI) % article [0.049; 0.064]
 
 % backtransformation of results
 muD = exp(logMuD);
@@ -220,8 +223,8 @@ GName = 'Fat (g/100 ml; Gerber)';
 
 % article Figure 7 (p. 147)
 f7 = figure;
-ax(1) = subplot(1,2,1);
-ax(2) = subplot(1,2,2);
+ax(1) = subplot(2,1,1);
+ax(2) = subplot(2,1,2);
 
 % Perform default BAA on the data.
 ba(ax(1), ...
@@ -247,6 +250,8 @@ s = ba(f8, Trig,Gerber, 'XName',TName, 'YName',GName, ...
 % difference on mean:
 sPolyResidualD = s.difference.sPolyResidual;
 display(sPolyResidualD) % article: 0.08033 (s_d on p. 148)
+% Erratum: the article shows a slightly different value. This is less than
+% 1.2% error, but still, the difference is there.
 
 % some text output
 f = [f7;f8];
@@ -290,16 +295,16 @@ display(loaD); % BA1999 p. 152: [-56.68, 25.44] mmHg
 % more results
 muDCI = s.difference.muCI;
 display(muDCI); % BA1999:
-% value not presented, but notice similarity with muDCI in section 2.
+% value not presented, but notice similarity to muDCI in section 2.
 loaDCI = s.difference.loaCI;
 display(loaDCI); % BA1999 p. 153:
 % [-63.5, 18.70
 %  -49.9, 32.2] mmHg
 % The article uses an incorrect calculation, because it uses 1.96. This
-% value comes from the normal distribution, whereas Student's
-% t-distribution should have been used. This would have resulted in a
-% slightly larger value than 1.96, hence the article's estimation of the
-% confidence intervals of the LOA is too narrow.
+% value is the 97.5 percentile of the normal distribution, whereas
+% Student's t-distribution should have been used. This would have resulted
+% in a slightly larger value than 1.96, hence the article's estimation of
+% the confidence intervals of the LOA is too narrow.
 
 %% 5.2 Unequal numbers of replicates (article p. 154)
 disp 'Section 5.2 Unequal numbers of replicates'
@@ -308,9 +313,25 @@ disp 'Section 5.2 Unequal numbers of replicates'
 load codata
 n = COData(:,1);
 RV = COData(:,2);
-IC = FCData(:,3);
+IC = COData(:,3);
+un = unique(n);
+un = un(:).';
+for i = numel(un):-1:1
+    j = un(i);
+    cellRV{i} = RV(n==j);
+    cellIC{i} = IC(n==j);
+end
 RVName = 'Radionuclide ventriculography';
 ICName = 'Impedance cardiography';
+
+% Figure 9 in BA1999 p. 155
+f9 = figure;
+ax(1) = subplot(2,1,1);
+ax(2) = subplot(2,1,2);
+
+% Graph subject mean against within-subject standard deviation for each
+% method separately.
+ba(ax, cellRV,cellIC, 'XName',RVName, 'YName',ICName, 'PlotMeanSD', true)
 
 %% 5.3 Replicated data in pairs (article p. 156)
 disp 'Section 5.3 Replicated data in pairs'

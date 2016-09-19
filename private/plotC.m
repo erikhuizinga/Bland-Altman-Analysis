@@ -1,4 +1,4 @@
-function plotC(axC,xok,yok,doPlotBasicStats,pRhoXY,rhoXY,doPlotLS,polyXY,msePXY,n,xName,yName)
+function plotC(axC,xok,yok,doPlotBasicStats,pRhoXY,rhoXY,n,xName,yName)
 % correlation plot
 
 % preparation
@@ -20,19 +20,6 @@ if doPlotBasicStats
     end
     sC.DisplayName = sprintf('\\rho = %.2f (%s)',rhoXY,strPRhoXY);
     legEntries(end+1) = sC;
-end
-
-% plot least-squares line
-if doPlotLS
-    XYLine = refline; %TODO make independent of stats toolbox?
-    XYLine.Color = 'r';
-    legEntries(end+1) = XYLine;
-    XYLine.DisplayName = 'least-squares';
-    XYLine.UserData = dcStruct( ...
-        ['M2 = ' num2str(polyXY(1)) 'M1 + ' num2str(polyXY(2))], ...
-        [], [], ...
-        ['MSE = ' num2str(msePXY)], ...
-        @dcXY);
 end
 
 % y = x reference line
@@ -58,4 +45,7 @@ axC.Children = axC.Children([end 1:end-1]);
 % equalise axes
 axis tight
 axis equal
+
+% set outer position
+setOP(axC)
 end

@@ -1,141 +1,206 @@
-function [muXY,S,varXW,varYW,loaCI,loa,muS,muSCI,eLoa,eMuS,sS,polyMuS,msePolyMuS, ...
-    sResPolyMuS,polyLLoa,polyULoa] = ...
-    statMuS(x,y,SType,n,z,t,doConReg,repType)
+function varargout = statMuS(varargin)
 % mean-S statistics
 % S refers to either difference or ratio
 
+%% determine statistic
+SType = varargin{3};
 switch SType
     case 'difference'
-        fun = @minus;
+        % mean-difference
+        SFun = @minus;
     case 'ratio'
-        assert(strcmp(repType,'none'),['Ratio statistics not ' ...
-            'implemented for repeated measurements.'])
-        fun = @rdivide;
+        % mean-ratio
+        SFun = @rdivide;
+    case 'SD'
+        % mean-standard deviation
+        [x,y] = varargin{1:2};
+        z = varargin{4};
+        doConstantRegression = varargin{5};
+        varargout = statMuSD(x,y,z,doConstantRegression);
+        return
+end
+% SFun is the statistic function
+
+%% input
+% parse inputs
+[x,y,~,n,z,t,doConstantRegression] = varargin{:};
+haveCell = iscell(x);
+
+% vectorise x and y into X and Y
+if haveCell
+    X = [x{:}];
+    Y = [y{:}];
+else
+    x = x.';
+    X = x(:).';
+    x = x.';
+    y = y.';
+    Y = y(:).';
+    y = y.';
 end
 
-% statistics without considering repeated measurements
-muXY = mean([x(:), y(:)],2);
-S = fun(x(:),y(:));
+% determine number of replicates
+if haveCell
+    m = cellfun(@numel,x);
+else
+    m = size(x,2)*ones(size(x,1),1);
+end
+% The number of replicates m is the same for x and y, because parseXY makes
+% sure only pairs of observations are kept. m is a n×1 vector.
 
-if repType
-    % repeated measurements statistics
-    
-    % within subject means
-    muXW = mean(x,2); % $\overline{X}$ in BA1999
-    muYW = mean(y,2); % idem for Y
-    
-    % within subject mean statistic
-    muSW = fun(muXW,muYW); % $\overline{D}$ in BA1999
-    muS = mean(muSW); % mean statistic, i.e. bias
-    varMuSW = var(muSW); % $s_\overline{d}^2$ in BA1999 p. 151
-    
-    % within subject variances (zero for no replicates)
-    varXW = mean(var(x,[],2)); % $s_{xw}^2$ in BA1999
-    varYW = mean(var(y,[],2)); % idem for y
-    
-    % number of replicates per subject
-    if iscell(x) % and thus iscell(y)
-        dbstack, keyboard %TODO verwijderen, testen
-        mx = cellfun(@numel,x);
-        my = cellfun(@numel,y);
-    else % x and y numeric matrices or vectors
-        mx = size(x,2)*ones(size(x,1),1); % $m_x$ in BA1999
-        my = mx; % because this point can only be reached in equal number
-        % of replicates
+%% ANOVA
+% prepare for one-way ANOVA
+for sub = n:-1:1
+    subjects{sub} = sub*ones(1,m(sub));
+end
+subjects = [subjects{:}]; % subject numbers, ‘groups’ in ANOVA
+
+% subject mean
+if haveCell
+    muXW = cellfun(@mean,x);
+    muYW = cellfun(@mean,y);
+else
+    muXW = mean(x,2);
+    muYW = mean(y,2);
+end
+
+if all(m==1)
+    varXWithin = 0;
+    varYWithin = 0;
+else
+    % perform one-way ANOVA
+    N = numel(X); % equals numel(Y)
+    dfE = N-n; % error degrees of freedom
+    for sub = n:-1:1 % loop over subjects, ‘groups’ in ANOVA
+        % squared errors per subject
+        SEX(sub) = sum( ( X(subjects==sub)-muXW(sub) ).^2 );
+        SEY(sub) = sum( ( Y(subjects==sub)-muYW(sub) ).^2 );
     end
-    
-    % variance of the statistic
-    varS = varMuSW + ...
-        ( 1 - sum(1./mx)/n ) * varXW + ...
-        ( 1 - sum(1./my)/n ) * varYW; % BA1999 p. 155 eq. 5.13
-    % This equation reduces to BA1999 p. 151 eq. 5.3 for
-    % isscalar(unique(mx)) & isscalar(unique(my)), which in turn reduces
-    % to simply varMuS for all(mx==1)&all(my==1), i.e. BA1999 Section 2
-    sS = sqrt(varS);
-    
-    % loa of the statistic
-    loa = muS + z*sS*[-1 1];
-    
-    % confidence interval of the bias
-    varMuS = varS/n; % BA1999 p. 153 ‘variance of the mean difference $\overline{d}$’
-    seMuS = sqrt(varMuS); % standard error of the bias
-    eMuS = t*seMuS; % muD error
-    muSCI = muS + eMuS*[-1 1];
-    
-    % variance of the variance of S and of the standard deviation of S
-    varVarS = ... % BA1999 p. 152 eq. 5.8
-        2*varMuSW^2/(n-1) + ...
-        2*(mx-1)*varXW^2/n/mx^2 + ...
-        2*(my-1)*varYW^2/n/my^2;
-    varSS = varVarS/4/varS; % BA1999 p. 153 eq. 5.9
-    
-    % variance of the LOA
-    varLoa = varMuS + z^2*varSS; % BA1999 p. 153 eq. 5.10
-    
-    % standard error of the LOA
-    seLoa = sqrt(varLoa);
-    
-    % confidence interval for the loa
-    eLoa = t*seLoa;
-    loaCI = [loa;loa] + eLoa*[-1 -1;1 1];
-    
-    % linear regression of global mean and S
-    [polyMuS,msePolyMuS,sResPolyMuS,polyLLoa,polyULoa] = ...
-        baLinReg(muXY,S,z,doConReg);
-else % no repeated measurements, regular BAA LOA calculation
-    % mean statistics
-    muS = mean(S); % mean statistic, i.e. bias
-    
-    % standard deviation of the statistic
-    sS = std(S); % $s_d$ in BA1999 p. 136
-    
-    varMuS = sS^2/n; % variance of muS, BA1999 p. 141
-    seMuS = sqrt(varMuS); % standard error of muS, BA1999 p. 142
-    
-    % varSS = sS^2/2/(n-1); % approximated variance of sS, BA1999 p. 141
-    % Instead, use exact formula for unbiased estimated variance
-    % Source: http://stats.stackexchange.com/a/28567/80486
-    % sSS = sS * gamma((n-1)/2) / gamma(n/2) * ...
-    %     sqrt( (n-1)/2 - ( gamma(n/2) / gamma((n-1)/2) )^2 );
-    gammafrac = gamma((n-1)/2) / gamma(n/2);
-    % if ~isfinite(gammafrac) % true for large n
-    % % approximate using gamma(a+b)/gamma(a) ~ a^b
-    % % Source: https://en.wikipedia.org/w/index.php?title=Gamma_function&oldid=737220343#General
-    % % compare:
-    % % figure
-    % % n = 1:500;
-    % % g1 = gamma((n-1)/2)./gamma(n/2);
-    % % g2 = ((n-1)/2).^(-1/2);
-    % % g3 = sqrt(2./(n-1));
-    % % plot(n,g1,n,g2,n,g3,n,g1-g2,n,g1-g3,n,g2-g3)
-    % % legend g1 g2 g3 g1-g2 g1-g3 g2-g3
-    % gammafrac = sqrt(2/(n-1)); % same as: gammafrac = ((n-1)/2).^(-1/2);
-    % end
-    sSS = sS * gammafrac * sqrt( (n-1)/2 - gammafrac^-2 );
-    varSS = sSS^2; % unbiased estimate of variance of s_d
-    
-    % limits of agreement statistics
-    loa = muS + z*sS*[-1 1]; % limits of agreement (LOA)
-    
-    % confidence intervals (CI) for bias (muSCI) and LOA (loaCI)
-    varLoa = varMuS + z^2*varSS; % BA1999 p. 141 (bottom)
-    seLoa = sqrt(varLoa); % standard error of the LOA
-    eLoa = t*seLoa; % LOA error
-    eMuS = t*seMuS; % muS error
-    muSCI = muS + eMuS*[-1 1];
-    loaCI = [loa;loa] + eLoa*[-1 -1;1 1];
-    % loaCI is a 2x2 matrix. Every column contains the CI for a LOA: the
-    % first column corresponds to loa(1), the second to loa(2). The first
-    % and second row correspond to the lower and upper CI bound
-    % respectively.
-    % LOA = [loaCI(1,:);loa;loaCI(2,:)]; % optional 3x2 matrix form
-    
-    % linear regression of mean and S
-    [polyMuS,msePolyMuS,sResPolyMuS,polyLLoa,polyULoa] = ...
-        baLinReg(muXY,S,z,doConReg);
-    
-    % within-subject variance of x and y is always zero in regular BAA LOA
-    varXW = 0;
-    varYW = 0;
+    SSEX = sum(SEX); % sum of squared errors
+    SSEY = sum(SEY);
+    varXWithin = SSEX/dfE; % estimate of within-subject variance for x, MSE
+    varYWithin = SSEY/dfE; % estimate of within-subject variance for y, MSE
 end
+
+%% calculation of the statistic
+% subject mean statistic, which is the statistic to plot as well
+muSWithin = SFun(muXW,muYW); % SFun is the statistic function
+
+%% limits of agreement
+% variance of the mean statistic
+varMuS = var(muSWithin);
+
+% correction term
+corrM = 1-sum(1./m)/n; % equals mean(1./m), but this is BA1999's notation
+
+% variance of the statistic
+varS = varMuS + corrM*varXWithin + corrM*varYWithin;
+% This is BA1999 eq. 5.13
+
+% standard deviation of statistic for single obsevations by the methods
+sS = sqrt(varS);
+
+% overall mean statistic, i.e. bias
+muS = mean(muSWithin);
+
+% limits of agreement
+loa = muS + z*sS*[-1 1];
+
+%% calculation of the mean
+% subject mean to plot
+mu = mean([muXW,muYW],2);
+
+%% linear regression statistics
+% linear regression of mean and S to plot with plotM
+[polyMuS,msePolyMuS,sResPolyMuS,polyLLoa,polyULoa] = ...
+    baLinReg(mu,muSWithin,z,doConstantRegression);
+
+%% confidence interval of the overall mean statistic (muS, i.e. bias)
+se2S = varS/n; % squared standard error of the bias
+seS = sqrt(se2S); % standard error
+eS = t*seS; % bias error
+muSCI = muS + eS*[-1 1]; % confidence interval
+
+%% confidence interval of the limits of agreement (loa)
+if haveCell
+    varXW = cellfun(@(v) var(v,[],2),x);
+    varYW = cellfun(@(v) var(v,[],2),y);
+else
+    varXW = var(x,[],2);
+    varYW = var(y,[],2);
+end
+varVarXW = sum(2*varXW.^2./(m-1))/n/n; % BA1999 eq. 5.4, adjusted for unequal replicates
+varVarYW = sum(2*varYW.^2./(m-1))/n/n;
+% note these reduce to eq. 5.4 for equal replicates
+
+% these are nan in case all(mx==1)&all(my==1)
+if isnan(varVarXW); varVarXW = 0; end
+if isnan(varVarYW); varVarYW = 0; end
+
+% BA1999 eq. 5.5 and 5.6 adjusted for unequal replicates
+varCorrectionTerm = ...
+    corrM^2 * varVarXW + ...
+    corrM^2 * varVarYW;
+% This is the variance of the correction term in eq. 5.3/5.13, adjusted
+% for unequal replicates.
+
+% BA1999 eq. 5.7
+varVarMuS = 2*varMuS^2/(n-1);
+
+% BA1999 eq. 5.8
+varVarS = varVarMuS + varCorrectionTerm;
+
+% BA1999 eq. 5.9
+varSS = varVarS/4/varS;
+
+% variance of the LOA
+se2Loa = se2S + z^2*varSS; % BA1999 p. 153 eq. 5.10
+
+% standard error of the LOA
+seLoa = sqrt(se2Loa);
+
+% confidence interval for the loa
+eLoa = t*seLoa;
+loaCI = [loa;loa] + eLoa*[-1 -1;1 1];
+
+%% output
+varargout = { ...
+    mu,muSWithin, ...
+    varXWithin,varYWithin, ...
+    loaCI,loa, ...
+    muS,muSCI, ...
+    eLoa,eS, ...
+    sS, ...
+    polyMuS,msePolyMuS,sResPolyMuS,polyLLoa,polyULoa ...
+    };
+end
+
+function out = statMuSD(x,y,z,doConstantRegression)
+if iscell(x)
+    % mean
+    muX = cellfun(@mean,x);
+    muY = cellfun(@mean,y);
+    % std
+    sX = cellfun(@std,x);
+    sY = cellfun(@std,y);
+else
+    % mean
+    muX = mean(x,2);
+    muY = mean(y,2);
+    % std
+    sX = std(x,[],2);
+    sY = std(y,[],2);
+end
+
+% regression of std on mean
+[polyMSDX,msePolyMSDX,sResPolyMSDX,polyLLoaMSDX,polyULoaMSDX] = ...
+    baLinReg(muX,sX,z,doConstantRegression);
+[polyMSDY,msePolyMSDY,sResPolyMSDY,polyLLoaMSDY,polyULoaMSDY] = ...
+    baLinReg(muY,sY,z,doConstantRegression);
+
+% output
+out = {muX,muY,sX,sY, ...
+    polyMSDX,msePolyMSDX,sResPolyMSDX,polyLLoaMSDX,polyULoaMSDX, ...
+    polyMSDY,msePolyMSDY,sResPolyMSDY,polyLLoaMSDY,polyULoaMSDY ...
+    };
 end

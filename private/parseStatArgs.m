@@ -1,12 +1,13 @@
-function [doPlotBasicStats,doPlotExtStats,doPlotRegStats,doConReg] = ...
+function [doPlotBasicStats,doPlotExtendedStats, ...
+    doPlotRegStats,doConstantRegression] = ...
     parseStatArgs(PlotStatistics,ConstantResidualVariance)
 % parse statistics arguments
 
 % defaults
 doPlotBasicStats = false;
-doPlotExtStats = false;
+doPlotExtendedStats = false;
 doPlotRegStats = false;
-doConReg = logical(ConstantResidualVariance);
+doConstantRegression = logical(ConstantResidualVariance);
 
 switch lower(PlotStatistics)
     case 'none'
@@ -15,7 +16,7 @@ switch lower(PlotStatistics)
         doPlotBasicStats = true;
     case 'extended'
         doPlotBasicStats = true;
-        doPlotExtStats = true;
+        doPlotExtendedStats = true;
     case 'regression'
         doPlotBasicStats = true;
         doPlotRegStats = true;
