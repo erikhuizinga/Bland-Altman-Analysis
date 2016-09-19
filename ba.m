@@ -73,14 +73,14 @@ function varargout = ba(varargin)
 %   titles.
 %   Example: 'YName','Y' sets the second measurement's name to 'Y'.
 %
-%   'Exclude': Observation pairs to exclude
+%   'Exclude': Subjects to exclude
 %   [] (default) | logical indices | numeric indices
-%   Observation pairs to exclude, specified as logical or numeric indices
-%   to index into x and y. The specified elements are removed from x and y
-%   before any calculations or plots.
-%   Example: 'Exclude',[1, 3, 4] excludes elements 1, 3 and 4 from x and y.
-%   Example: 'Exclude',[0 0 1 0 1 1 0 0 1] excludes the true elements from
-%   x and y.
+%   Subjects to exclude, specified as logical or numeric indices into x and
+%   y. The specified rows are removed from x and y before any calculations
+%   are done or graphs are created.
+%   Example: 'Exclude',[1, 3, 4] excludes rows 1, 3 and 4 from x and y.
+%   Example: 'Exclude',[0 0 1 0 1 1 0 0 1] excludes the true rows from
+%   x and y. Note the logical vector needn't be a column vector.
 %   
 %   'Transform': Function to transform data with
 %   @(x) x (default) | function handle
@@ -308,6 +308,7 @@ p.addParameter('YName',inputname(iyname),@ischar)
 p.addParameter('PlotDefault',false,@validatelogical)
 p.addParameter('PlotMeanDifference',false,@validatelogical)
 p.addParameter('PlotMeanRatio',false,@validatelogical)
+p.addParameter('PlotMeanSD',false,@validatelogical)
 p.addParameter('PlotCorrelation',false,@validatelogical)
 p.addParameter('Exclude',[],@validatelogical)
 p.addParameter('PlotStatistics','none',@ischar)
@@ -323,7 +324,7 @@ s2v(p.Results); %#ok<*NODEF>
 % x and y: measurements of two methods
 % parseXY validates and reshapes x and y for further analysis. It also
 % checks for repeated measurements analysis.
-[x,y,doRepeated] = parseXY(x,y);
+[xok,yok,doRepeated] = parseXY(x,y);
 
 % alpha: significance level
 if ~isscalar(a) && a<0 && a>1
@@ -337,18 +338,22 @@ xName = strjoin(XName,', ');
 yName = strjoin(YName,', ');
 
 % validate plot arguments
-[doPlotMD,axMD,doPlotMR,axMR,doPlotC,axC] = validatePlotArgs( ...
-    PlotDefault, PlotMeanDifference, PlotMeanRatio, PlotCorrelation, h ...
+[doPlotMD,axMD,doPlotMR,axMR,doPlotMSD,axMSD,doPlotC,axC] = ...
+    validatePlotArgs( ...
+    PlotDefault, ...
+    PlotMeanDifference, PlotMeanRatio, PlotMeanSD, PlotCorrelation, ...
+    h ...
     );
 
 % exclude samples
-lex = false(size(x));
+lex = false(size(xok,1),1);
 lex(Exclude) = true;
-x(lex) = [];
-y(lex) = [];
+xok(lex,:) = [];
+yok(lex,:) = [];
 
 % statistics set to plot
-[doPlotBasicStats,doPlotExtStats,doPlotRegStats,doConReg] = ...
+[doPlotBasicStats,doPlotExtendedStats, ...
+    doPlotRegStats,doConstantRegression] = ...
     parseStatArgs(PlotStatistics,ConstantResidualVariance);
 
 % transformation function
@@ -362,8 +367,8 @@ switch lower(char(transFun)) % detect supported transformations
         if any(strcmpi(p.UsingDefaults,'YName'))
             yName = ['Log ' yName];
         end
-        x = transFun(x);
-        y = transFun(y);
+        xok = transFun(xok);
+        yok = transFun(yok);
     otherwise % no transformation
 end
 
@@ -372,12 +377,13 @@ doPlotLS = logical(PlotLeastSquares);
 
 %% Bland-Altman analysis
 out = baloa( ...
-    x, xName, y, yName, a, ...
+    xok, xName, yok, yName, a, ...
     doPlotMD, axMD, ...
     doPlotMR, axMR, ...
+    doPlotMSD, axMSD, ...
     doPlotC, axC, ...
-    doPlotBasicStats, doPlotExtStats, ...
-    doPlotRegStats, doConReg, ...
+    doPlotBasicStats, doPlotExtendedStats, ...
+    doPlotRegStats, doConstantRegression, ...
     doPlotLS, ...
     doRepeated);
 

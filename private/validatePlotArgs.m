@@ -1,9 +1,13 @@
-function [doPlotMD,axMD,doPlotMR,axMR,doPlotC,axC] = validatePlotArgs( ...
-    PlotDefault, PlotMeanDifference, PlotMeanRatio, PlotCorrelation, h ...
+function [doPlotMD,axMD,doPlotMR,axMR,doPlotMSD,axMSD,doPlotC,axC] = ...
+    validatePlotArgs( ...
+    PlotDefault, ...
+    PlotMeanDifference, PlotMeanRatio, PlotMeanSD, PlotCorrelation, ...
+    h ...
     )
 % default axes variables
 axMD = [];
 axMR = [];
+axMSD = [];
 axC = [];
 
 % doAllPlots
@@ -17,9 +21,12 @@ else
 end
 
 doPlotMR = logical(PlotMeanRatio);
+doPlotMSD = logical(PlotMeanSD);
 
 % validate number and type of handles in h for the requested plots
-doPlot = [doPlotMD doPlotMR doPlotC];
+doPlot = [doPlotMD doPlotMR ...
+    doPlotMSD doPlotMSD ... % counts twice, because it creates 2 plots
+    doPlotC];
 if any(doPlot)
     nPlot = nnz(doPlot);
     if isempty(h)
@@ -69,6 +76,7 @@ if any(doPlot)
     % store axes in plot order
     if doPlotMD, axMD = ax(1); ax(1) = []; end
     if doPlotMR, axMR = ax(1); ax(1) = []; end
+    if doPlotMSD, axMSD(1:2,1) = ax(1:2); ax(1:2) = []; end
     if doPlotC, axC = ax(1); end % ax(1) = []; end
 end
 end
