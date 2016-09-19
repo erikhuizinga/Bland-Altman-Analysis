@@ -76,7 +76,7 @@ if any(doPlot)
     % store axes in plot order
     if doPlotMD, axMD = ax(1); ax(1) = []; end
     if doPlotMR, axMR = ax(1); ax(1) = []; end
-    if doPlotMSD, axMSD(1:2,1) = ax(1:2); ax(1:2) = []; end
+    if doPlotMSD, axMSD = ax(1:2); axMSD = axMSD(:); ax(1:2) = []; end
     if doPlotC, axC = ax(1); end % ax(1) = []; end
 end
 end

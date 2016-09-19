@@ -2,6 +2,7 @@ function varargout = statMuS(varargin)
 % mean-S statistics
 % S refers to either difference or ratio
 
+%% determine statistic
 SType = varargin{3};
 switch SType
     case 'difference'
@@ -9,218 +10,197 @@ switch SType
         SFun = @minus;
     case 'ratio'
         % mean-ratio
-        repType = varargin{8};
-        assert(strcmp(repType,'none'),['Ratio statistics not ' ...
-            'implemented for repeated measurements.'])
         SFun = @rdivide;
     case 'SD'
         % mean-standard deviation
         [x,y] = varargin{1:2};
-        varargout = statMuSD(x,y);
+        z = varargin{4};
+        doConstantRegression = varargin{5};
+        varargout = statMuSD(x,y,z,doConstantRegression);
         return
 end
 % SFun is the statistic function
 
+%% input
 % parse inputs
-[x,y,~,n,z,t,doConstantRegression,~] = varargin{:};
+[x,y,~,n,z,t,doConstantRegression] = varargin{:};
+haveCell = iscell(x);
 
-if iscell(x) % and y is a cell too
-    % first determine size of each cell    
-    % number of replicates per subject
-    % mx = cellfun(@numel,x);
-    % my = mx; % this is enforced by parseXY
-    m = cellfun(@numel,x);
-    
-    % prepare for one-way ANOVA
-    for i = n:-1:1
-        subjects{i} = i*ones(1,m(i));
-    end
-    subjects = [subjects{:}]; % subject numbers
-    X = [x{:}]; % vectorise data
-    Y = [y{:}]; % idem
-    muXW = cellfun(@mean,x);
-    muYW = cellfun(@mean,y);
-    
-    % perform one-way ANOVA
-    N = numel(X);
-    dfE = N-n;
-    for sub = n:-1:1
-        SSEX(sub) = sum( ( X(subjects==sub)-muXW(sub) ).^2 );
-        SSEY(sub) = sum( ( Y(subjects==sub)-muYW(sub) ).^2 );
-    end
-    SSEX = sum(SSEX);
-    SSEY = sum(SSEY);
-    varXWithin = SSEX/dfE; % estimate of within-subject variance for x, MSE
-    varYWithin = SSEY/dfE; % estimate of within-subject variance for y, MSE
-    
-    % correction term 
-    corrM = sum(1./m)/n; % equal to mean(1./m), but this is the notation in BA1999
-    
-    % subject mean statistic
-    muSW = SFun(muXW,muYW);
-    
-    % variance of the mean statistic
-    varMuS = var(muSW);
-    
-    % variance of the statistic
-    varS = varMuS + (1-corrM)*varXWithin + (1-corrM)*varYWithin;
-    % This is BA1999 eq. 5.13
-    
-    % standard deviation of statistic for single obsevations by the methods
-    sS = sqrt(varS);
-    
-    % overall mean statistic, i.e. bias
-    muS = mean(muSW);
-    
-    % limits of agreement
-    eMuS = z*sS;
-    loa = muS + eMuS*[-1 1];
-    
-    % statistics without consideration of repeated measurements
-    muXY = mean([X;Y]);
-    S = SFun(X,Y);
-    
-    % subject mean to plot
-    mu = mean([muXW,muYW],2);
-    
-    % linear regression of mean and S to plot with plotM
-    [polyMuS,msePolyMuS,sResPolyMuS,polyLLoa,polyULoa] = ...
-        baLinReg(mu,muSW,z,doConstantRegression);
+% vectorise x and y into X and Y
+if haveCell
+    X = [x{:}];
+    Y = [y{:}];
 else
-    % within subject means
-    muXW = mean(x,2); % $\overline{X}$
-    muYW = mean(y,2); % idem for Y
-    
-    % within subject mean statistic
-    muSW = SFun(muXW,muYW); % $\overline{d}$
-    
-    % overall mean statistic
-    muS = mean(muSW); % mean statistic, i.e. bias
-    varMuSW = var(muSW); % $s_\overline{d}^2$
-    
-    % within subject variances (zero for no replicates)
-    varXW = var(x,[],2); % elements in $s_{xw}^2$ in BA1999
-    varYW = var(y,[],2); % idem for y
-    
-    mx = size(x,2)*ones(size(x,1),1); % $m_x$
-    my = mx; % because this point can only be reached in equal number
-    % of replicates
-    
-    % weights of the correction term in BA1999 p. 155 eq. 5.13
-    correctionTermXWeight = ( 1 - sum(1./mx)/n );
-    correctionTermYWeight = ( 1 - sum(1./my)/n );
-    % These weights reduce to those of BA1999 p. 151 eq. 5.3 for
-    % isscalar(unique(mx)) & isscalar(unique(my)) and reduce to zero for
-    % all(mx==1)&all(my==1), i.e. BA1999 section 2.
-    
-    % variance of the statistic
-    % BA1999 p. 155 eq. 5.3 or 5.13
-    varS = varMuSW + ...
-        correctionTermXWeight * mean(varXW) + ...
-        correctionTermYWeight * mean(varYW); % Var$(D)$
-    sS = sqrt(varS);
-    
-    % loa of the statistic
-    loa = muS + z*sS*[-1 1];
-    
-    % confidence interval of the bias
-    varMuS = varS/n; % BA1999 p. 153 ‘variance of the mean difference $\overline{d}$’
-    seMuS = sqrt(varMuS); % standard error of the bias
-    eMuS = t*seMuS; % bias error
-    muSCI = muS + eMuS*[-1 1];
-    
-    % % variance of the variance of S and of the standard deviation of S
-    % varVarS = ... % BA1999 p. 152 eq. 5.8
-    %     2*varMuSW^2/(n-1) + ...
-    %     2*(mx-1)*varXW^2/n/mx^2 + ...
-    %     2*(my-1)*varYW^2/n/my^2;
-    
-    % BA1999 p. 152 eq. 5.4, adjusted for unequal replicates
-    varVarXW = sum(2*varXW.^2./(mx-1))/n/n; % $var(s_{xw}^2)$
-    varVarYW = sum(2*varYW.^2./(my-1))/n/n; % idem for y
-    % note these reduce to eq. 5.4 for equal replicates
-    
-    % these are nan in case all(mx==1)&all(my==1)
-    if isnan(varVarXW); varVarXW = 0; end
-    if isnan(varVarYW); varVarYW = 0; end
-    
-    % BA1999 p. 152 eq. 5.5 and 5.6 adjusted for unequal replicates
-    varCorrectionTerm = ...
-        correctionTermXWeight^2 * varVarXW + ...
-        correctionTermYWeight^2 * varVarYW;
-    % This is the variance of the correction term in eq. 5.3/5.13, adjusted
-    % for unequal replicates.
-    
-    % BA1999 p. 152 eq. 5.7
-    varVarMuS = 2*varMuSW^2/(n-1);
-    
-    % BA1999 p. 152 eq. 5.8
-    varVarS = varVarMuS + varCorrectionTerm; % Var$(\hat{\sigma}_d^2)$
-    
-    % BA1999 p. 153 eq. 5.9
-    varSS = varVarS/4/varS; % Var$(\hat{\sigma}_d)$
-    
-    % variance of the LOA
-    varLoa = varMuS + z^2*varSS; % BA1999 p. 153 eq. 5.10
-    
-    % standard error of the LOA
-    seLoa = sqrt(varLoa);
-    
-    % confidence interval for the loa
-    eLoa = t*seLoa;
-    loaCI = [loa;loa] + eLoa*[-1 -1;1 1];
-    
-    % statistics without considering repeated measurements
-    muXY = mean([x(:), y(:)],2);
-    S = SFun(x(:),y(:));
-    
-    % linear regression of global mean and S
-    [polyMuS,msePolyMuS,sResPolyMuS,polyLLoa,polyULoa] = ...
-        baLinReg(muXY,S,z,doConstantRegression);
+    x = x.';
+    X = x(:).';
+    x = x.';
+    y = y.';
+    Y = y(:).';
+    y = y.';
 end
 
+% determine number of replicates
+if haveCell
+    m = cellfun(@numel,x);
+else
+    m = size(x,2)*ones(size(x,1),1);
+end
+% The number of replicates m is the same for x and y, because parseXY makes
+% sure only pairs of observations are kept. m is a n×1 vector.
+
+%% ANOVA
+% prepare for one-way ANOVA
+for sub = n:-1:1
+    subjects{sub} = sub*ones(1,m(sub));
+end
+subjects = [subjects{:}]; % subject numbers, ‘groups’ in ANOVA
+
+% subject mean
+if haveCell
+    muXW = cellfun(@mean,x);
+    muYW = cellfun(@mean,y);
+else
+    muXW = mean(x,2);
+    muYW = mean(y,2);
+end
+
+if all(m==1)
+    varXWithin = 0;
+    varYWithin = 0;
+else
+    % perform one-way ANOVA
+    N = numel(X); % equals numel(Y)
+    dfE = N-n; % error degrees of freedom
+    for sub = n:-1:1 % loop over subjects, ‘groups’ in ANOVA
+        % squared errors per subject
+        SEX(sub) = sum( ( X(subjects==sub)-muXW(sub) ).^2 );
+        SEY(sub) = sum( ( Y(subjects==sub)-muYW(sub) ).^2 );
+    end
+    SSEX = sum(SEX); % sum of squared errors
+    SSEY = sum(SEY);
+    varXWithin = SSEX/dfE; % estimate of within-subject variance for x, MSE
+    varYWithin = SSEY/dfE; % estimate of within-subject variance for y, MSE
+end
+
+%% calculation of the statistic
+% subject mean statistic, which is the statistic to plot as well
+muSWithin = SFun(muXW,muYW); % SFun is the statistic function
+
+%% limits of agreement
+% variance of the mean statistic
+varMuS = var(muSWithin);
+
+% correction term
+corrM = 1-sum(1./m)/n; % equals mean(1./m), but this is BA1999's notation
+
+% variance of the statistic
+varS = varMuS + corrM*varXWithin + corrM*varYWithin;
+% This is BA1999 eq. 5.13
+
+% standard deviation of statistic for single obsevations by the methods
+sS = sqrt(varS);
+
+% overall mean statistic, i.e. bias
+muS = mean(muSWithin);
+
+% limits of agreement
+loa = muS + z*sS*[-1 1];
+
+%% calculation of the mean
+% subject mean to plot
+mu = mean([muXW,muYW],2);
+
+%% linear regression statistics
+% linear regression of mean and S to plot with plotM
+[polyMuS,msePolyMuS,sResPolyMuS,polyLLoa,polyULoa] = ...
+    baLinReg(mu,muSWithin,z,doConstantRegression);
+
+%% confidence interval of the overall mean statistic (muS, i.e. bias)
+se2S = varS/n; % squared standard error of the bias
+seS = sqrt(se2S); % standard error
+eS = t*seS; % bias error
+muSCI = muS + eS*[-1 1]; % confidence interval
+
+%% confidence interval of the limits of agreement (loa)
+if haveCell
+    varXW = cellfun(@(v) var(v,[],2),x);
+    varYW = cellfun(@(v) var(v,[],2),y);
+else
+    varXW = var(x,[],2);
+    varYW = var(y,[],2);
+end
+varVarXW = sum(2*varXW.^2./(m-1))/n/n; % BA1999 eq. 5.4, adjusted for unequal replicates
+varVarYW = sum(2*varYW.^2./(m-1))/n/n;
+% note these reduce to eq. 5.4 for equal replicates
+
+% these are nan in case all(mx==1)&all(my==1)
+if isnan(varVarXW); varVarXW = 0; end
+if isnan(varVarYW); varVarYW = 0; end
+
+% BA1999 eq. 5.5 and 5.6 adjusted for unequal replicates
+varCorrectionTerm = ...
+    corrM^2 * varVarXW + ...
+    corrM^2 * varVarYW;
+% This is the variance of the correction term in eq. 5.3/5.13, adjusted
+% for unequal replicates.
+
+% BA1999 eq. 5.7
+varVarMuS = 2*varMuS^2/(n-1);
+
+% BA1999 eq. 5.8
+varVarS = varVarMuS + varCorrectionTerm;
+
+% BA1999 eq. 5.9
+varSS = varVarS/4/varS;
+
+% variance of the LOA
+se2Loa = se2S + z^2*varSS; % BA1999 p. 153 eq. 5.10
+
+% standard error of the LOA
+seLoa = sqrt(se2Loa);
+
+% confidence interval for the loa
+eLoa = t*seLoa;
+loaCI = [loa;loa] + eLoa*[-1 -1;1 1];
+
+%% output
 varargout = { ...
-    muXY,S, ...
-    varXW,varYW, ...
+    mu,muSWithin, ...
+    varXWithin,varYWithin, ...
     loaCI,loa, ...
     muS,muSCI, ...
-    eLoa,eMuS, ...
+    eLoa,eS, ...
     sS, ...
     polyMuS,msePolyMuS,sResPolyMuS,polyLLoa,polyULoa ...
     };
-
-%% archive:
-% early version of exact calculation of sSS and varSS
-% % varSS = sS^2/2/(n-1); % approximated variance of sS, BA1999 p. 141
-% % Instead, use exact formula for unbiased estimated variance
-% % Source: http://stats.stackexchange.com/a/28567/80486
-% % sSS = sS * gamma((n-1)/2) / gamma(n/2) * ...
-% %     sqrt( (n-1)/2 - ( gamma(n/2) / gamma((n-1)/2) )^2 );
-% gammafrac = gamma((n-1)/2) / gamma(n/2);
-% % if ~isfinite(gammafrac) % true for large n
-% % % approximate using gamma(a+b)/gamma(a) ~ a^b
-% % % Source: https://en.wikipedia.org/w/index.php?title=Gamma_function&oldid=737220343#General
-% % % compare:
-% % % figure
-% % % n = 1:500;
-% % % g1 = gamma((n-1)/2)./gamma(n/2);
-% % % g2 = ((n-1)/2).^(-1/2);
-% % % g3 = sqrt(2./(n-1));
-% % % plot(n,g1,n,g2,n,g3,n,g1-g2,n,g1-g3,n,g2-g3)
-% % % legend g1 g2 g3 g1-g2 g1-g3 g2-g3
-% % gammafrac = sqrt(2/(n-1)); % same as: gammafrac = ((n-1)/2).^(-1/2);
-% % end
-% sSS = sS * gammafrac * sqrt( (n-1)/2 - gammafrac^-2 );
-% varSS = sSS^2; % unbiased estimate of variance of s_d
 end
 
-function out = statMuSD(x,y)
-% mean
-muX = mean(x,2);
-muY = mean(y,2);
-% std
-sX = std(x,[],2);
-sY = std(y,[],2);
+function out = statMuSD(x,y,z,doConstantRegression)
+if iscell(x)
+    % mean
+    muX = cellfun(@mean,x);
+    muY = cellfun(@mean,y);
+    % std
+    sX = cellfun(@std,x);
+    sY = cellfun(@std,y);
+else
+    % mean
+    muX = mean(x,2);
+    muY = mean(y,2);
+    % std
+    sX = std(x,[],2);
+    sY = std(y,[],2);
+end
+
+% regression of std on mean
+[polyMSDX,msePolyMSDX,sResPolyMSDX,polyLLoaMSDX,polyULoaMSDX] = ...
+    baLinReg(muX,sX,z,doConstantRegression);
+[polyMSDY,msePolyMSDY,sResPolyMSDY,polyLLoaMSDY,polyULoaMSDY] = ...
+    baLinReg(muY,sY,z,doConstantRegression);
+
 % output
-out = {muX,muY,sX,sY};
+out = {muX,muY,sX,sY, ...
+    polyMSDX,msePolyMSDX,sResPolyMSDX,polyLLoaMSDX,polyULoaMSDX, ...
+    polyMSDY,msePolyMSDY,sResPolyMSDY,polyLLoaMSDY,polyULoaMSDY ...
+    };
 end

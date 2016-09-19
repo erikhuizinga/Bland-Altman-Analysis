@@ -42,6 +42,9 @@ if iscell(v)
     % now v is a column vector cell, every element a subject and every
     % cell's contents a row vector of replicates
     
+    % keep valid indices
+    % apparently doesn't ‘reshape’: % reshape(lok,size(vok)); % match shapes
+    if ~isequal(size(lok),size(vok)), lok = lok.'; end % match shapes
     vok = cellfun(@(vok,lok) vok(lok), vok,lok, 'UniformOutput',false);
     
     nV = cellfun(@numel,vok);
