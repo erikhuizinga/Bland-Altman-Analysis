@@ -48,7 +48,7 @@ axes(axMY)
 hold(axMY,'on')
 legEntries = gobjects(0);
 strP = num2str(100*(1-a));
-if doMSD, M = sum(m)/2; else M = sum(m); end
+M = sum(m); % number of observation pairs
 
 % mean-Y plot
 sM = scatter(x,y);
@@ -210,7 +210,7 @@ if doPlotRegStats
     regLineLLoa.Color = 'k';
     if doConReg
         strLoaFun = sprintf('s_{res}');
-        strLoaDC = sprintf('%.2f×s_res',z); %TODO check symbols
+        strLoaDC = sprintf('%.2f×s_res',z); %TODO check ×
     else
         strLoaFun = sprintf('\\sqrt{\\pi/2}f_{res}(\\mu)');
         strLoaDC = sprintf('%.2f×f_res(µ)',z*sqrt(pi/2)); %TODO check symbols
@@ -221,7 +221,7 @@ if doPlotRegStats
         sqrt(pi/2)*z, ...
         num2str(polyLLoa(1)), num2str(polyLLoa(2)) ...
         ), ...
-        'µ', sprintf('lower %s%% LOA',strP), [], [], ...
+        'µ', sprintf('lower %s%% LOA',strP), [], [], ... %TODO check µ
         @dcXYZ);
     
     % upper LOA line
@@ -234,7 +234,7 @@ if doPlotRegStats
         strLoaDC, ...
         num2str(polyULoa(1)),num2str(polyULoa(2)) ...
         ), ...
-        'µ', sprintf('upper %s%% LOA',strP), [], [], ...
+        'µ', sprintf('upper %s%% LOA',strP), [], [], ... %TODO check µ
         @dcXYZ);
     
     % adjust y limits
@@ -265,9 +265,11 @@ end
 
 % axes labels
 if n==M
-    strSubObs = sprintf('%u subjects and observations',n);
+    strSubObs = sprintf('\\itn = \\Sigmam\\bf = %u subjects and observation pairs',n);
+elseif doMSD
+    strSubObs = sprintf('\\itn\\bf = %u subjects, %u observations',n,M);
 else
-    strSubObs = sprintf('%u subjects, %u observations',n,M);
+    strSubObs = sprintf('\\itn\\bf = %u subjects, %u observation pairs',n,M);
 end
 if doMSD
     xlabel('subject mean')
