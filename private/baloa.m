@@ -31,7 +31,7 @@ t = Tinv(p,n-1); % inverse t-distribution at p
 
 % difference statistics
 [muXY,d,varXWithin,varYWithin,loaDCI,loaD,muD,muDCI,eLoaD,eMuD,sD, ...
-    polyMuXYD,msePolyMuXYD,sResPolyMuXYD,polyLLoaD,polyULoaD] = ...
+    polyMuXYD,msePolyMuXYD,sResPolyMuXYD,polyLLoaD,polyULoaD,m,X,Y] = ...
     statMuS(x,y,'difference',n,z,t,doConstantRegression);
 
 % mean-difference correlation statistics
@@ -71,13 +71,13 @@ end
 
 % correlation statistics and linear regression %TODO linreg for muXY and d
 if doPlotC
-    [pRhoXY,rhoXY,polyXY,msePXY] = statC(x,y,z,doConstantRegression);
+    [pRhoXY,rhoXY,polyXY,msePXY] = statC(X,Y,z,doConstantRegression);
 end
 
 %% graphics
 % correlation plot
 if doPlotC
-    plotC(axC,x,y,doPlotBasicStats,pRhoXY,rhoXY,n,xName,yName)
+    plotC(axC,X,Y,doPlotBasicStats,pRhoXY,rhoXY,sum(m),xName,yName)
 end
 
 % mean-difference plot
@@ -86,7 +86,8 @@ if doPlotMD
     plotM(axMD,muXY,d,'difference','d',0,doPlotBasicStats,loaDCI, ...
         pRSMuD,rSMuD,loaD,a,z,muD,muDCI,doPlotExtendedStats,eLoaD,eMuD, ...
         '-',n,xName,yName, ...
-        doPlotRegStats,polyMuXYD,msePolyMuXYD,polyLLoaD,polyULoaD,doConstantRegression)
+        doPlotRegStats,polyMuXYD,msePolyMuXYD,polyLLoaD,polyULoaD,doConstantRegression, ...
+        m)
 end
 
 % mean-ratio plot
@@ -94,7 +95,8 @@ if doPlotMR
     plotM(axMR,muXY,R,'ratio','R',1,doPlotBasicStats,loaRCI,pRSMuR, ...
         rSMuR,loaR,a,z,muR,muRCI,doPlotExtendedStats,eLoaR,eMuR, ...
         '/',n,xName,yName, ...
-        doPlotRegStats,polyMuXYR,msePolyMuXYR,polyLLoaR,polyULoaR,doConstantRegression)
+        doPlotRegStats,polyMuXYR,msePolyMuXYR,polyLLoaR,polyULoaR,doConstantRegression, ...
+        m)
 end
 
 % mean-standard deviation plot
@@ -106,7 +108,8 @@ if doPlotMSD
         [],[],[],[],[],doPlotExtendedStats,[],[], ...
         'std',n,xName,yName, ...
         doPlotRegStats, ...
-        polyMSD,msePolyMSD,polyLLoaMSD,polyULoaMSD,doConstantRegression)
+        polyMSD,msePolyMSD,polyLLoaMSD,polyULoaMSD,doConstantRegression, ...
+        m)
 end
 
 %% set data cursor update function for figure(s)
