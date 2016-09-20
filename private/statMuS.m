@@ -23,10 +23,10 @@ end
 
 %% input
 % parse inputs
-[x,y,~,n,z,t,doConstantRegression] = varargin{:};
+[x,y,~,n,z,t,doConstantRegression,doCTV] = varargin{:};
 haveCell = iscell(x);
 
-% vectorise x and y into X and Y
+% vectorise x and y into X and Y and calculate the vectorised statistic
 if haveCell
     X = [x{:}];
     Y = [y{:}];
@@ -36,6 +36,7 @@ else
     Y = transpose(y);
     Y = Y(:);
 end
+S = SFun(X,Y); % vectorised statistic
 
 % determine number of replicates
 if haveCell
@@ -51,16 +52,22 @@ end
 for sub = n:-1:1
     subjects{sub} = sub*ones(1,m(sub));
 end
-subjects = [subjects{:}]; % subject numbers, ‘groups’ in ANOVA
+subjects = [subjects{:}]; % subject numbers, groups in ANOVA
 
 % subject mean
 if haveCell
-    muXW = cellfun(@mean,x);
-    muYW = cellfun(@mean,y);
+    muXWithin = cellfun(@mean,x);
+    muYWithin = cellfun(@mean,y);
 else
-    muXW = mean(x,2);
-    muYW = mean(y,2);
+    muXWithin = mean(x,2);
+    muYWithin = mean(y,2);
 end
+
+% subject mean statistic, which is the statistic to plot as well
+muSWithin = SFun(muXWithin,muYWithin); % SFun is the statistic function
+
+% global mean statistic
+muSGlobal = mean(S);
 
 if all(m==1)
     varXWithin = 0;
@@ -68,21 +75,43 @@ if all(m==1)
 else
     % perform one-way ANOVA
     N = numel(X); % equals numel(Y)
-    dfE = N-n; % error degrees of freedom
-    for sub = n:-1:1 % loop over subjects, ‘groups’ in ANOVA
-        % squared errors per subject
-        SEX(sub) = sum( ( X(subjects==sub)-muXW(sub) ).^2 );
-        SEY(sub) = sum( ( Y(subjects==sub)-muYW(sub) ).^2 );
+    for sub = n:-1:1 % loop over subjects, groups in ANOVA
+        % squared residual (SR) effect, per subject
+        SRX(sub) = sum( ( X(subjects==sub)-muXWithin(sub) ).^2 );
+        SRY(sub) = sum( ( Y(subjects==sub)-muYWithin(sub) ).^2 );
+        SRD(sub) = sum( ( S(subjects==sub)-muSWithin(sub) ).^2 );
+        % squared 
     end
-    SSEX = sum(SEX); % sum of squared errors
-    SSEY = sum(SEY);
-    varXWithin = SSEX/dfE; % estimate of within-subject variance for x, MSE
-    varYWithin = SSEY/dfE; % estimate of within-subject variance for y, MSE
+    % SSS, sum of squared subjects effect
+    SSSD = m.'*( muSWithin-muSGlobal ).^2;
+    
+    % MSS, mean squared subjects effect
+    MSSS = SSSD/(n-1);
+    
+    % SSR, sum of squared residual effects
+    SSRX = sum(SRX);
+    SSRY = sum(SRY);
+    SSRD = sum(SRD);
+    
+    % MSR, mean squared residual effect
+    dfR = N-n; % residual degrees of freedom
+    MSRX = SSRX/dfR;
+    MSRY = SSRY/dfR;
+    MSRS = SSRD/dfR;
 end
 
-%% calculation of the statistic
-% subject mean statistic, which is the statistic to plot as well
-muSWithin = SFun(muXW,muYW); % SFun is the statistic function
+% estimates of within-subject component variance
+varXWithin = MSRX;
+varYWithin = MSRY;
+varSWithin = MSRS;
+
+% estimate of between-subject component variance
+divisor = (N*N-m'*m)/(n-1)/N;
+varSBetween = (MSSS-MSRS)/divisor;
+
+% estimate of total variance and standard deviation
+varTotalS = varSBetween + varSWithin;
+sTotalS = sqrt(varTotalS);
 
 %% limits of agreement
 % variance of the mean statistic
@@ -106,7 +135,7 @@ loa = muS + z*sS*[-1 1];
 
 %% calculation of the mean
 % subject mean to plot
-mu = mean([muXW,muYW],2);
+mu = mean([muXWithin,muYWithin],2);
 
 %% linear regression statistics
 % linear regression of mean and S to plot with plotM
