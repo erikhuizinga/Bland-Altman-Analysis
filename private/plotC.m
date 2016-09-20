@@ -34,7 +34,7 @@ legEntries(end+1) = eqLine;
 % axes labels
 xlabel('M_1')
 ylabel('M_2')
-title(sprintf(['Scatter plot of (%u observations):\n' ...
+title(sprintf(['Scatter plot of (%u observation pairs):\n' ...
     ' \\rm\\itM_1\\rm: %s, \\itM_2\\rm: %s'],n,xName,yName))
 
 % legend
