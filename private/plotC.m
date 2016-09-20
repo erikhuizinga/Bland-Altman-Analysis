@@ -1,13 +1,14 @@
-function plotC(axC,xok,yok,doPlotBasicStats,pRhoXY,rhoXY,n,xName,yName)
-% correlation plot
+function plotC(axC,x,y,doPlotBasicStats,pRhoXY,rhoXY,n,xName,yName)
+% correlation plot of observations not accounting for repeated measurements
 
 % preparation
 axes(axC)
 legEntries = gobjects(0);
 
 % plot y against x
-sC = scatter(xok,yok);
-sC.UserData = dcStruct([],'M1','M2',[],@dcXY);
+sC = scatter(x,y);
+sC.ZData = 1:n;
+sC.UserData = dcStruct([],'M1','M2','j',[],@dcXYZ);
 
 if doPlotBasicStats
     % add correlation to legend
@@ -27,14 +28,14 @@ eqLine = refline(1,0); % 45° degree, because of axis equal
 eqLine.Color = [.75 .75 .75];
 eqLine.LineStyle = '--';
 eqLine.DisplayName = 'line of equality';
-eqLine.UserData = dcStruct([],[],[],'M2 = M1',@dcXY);
+eqLine.UserData = dcStruct([],[],[],[],'M2 = M1',@dcXYZ);
 legEntries(end+1) = eqLine;
 
 % axes labels
 xlabel('M_1')
 ylabel('M_2')
 title(sprintf(['Scatter plot of (%u observations):\n' ...
-    ' \\rm\\itM_1\\rm: %s\n \\itM_2\\rm: %s'],n,xName,yName))
+    ' \\rm\\itM_1\\rm: %s, \\itM_2\\rm: %s'],n,xName,yName))
 
 % legend
 legend(legEntries,'Location','SouthEast')
