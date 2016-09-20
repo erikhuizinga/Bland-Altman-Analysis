@@ -63,6 +63,8 @@ display(sD) % article: 19.61 mmHg
 display(loaD) % article: [-54.7, 22.1] mmHg
 
 % exclude subjects 78 and 80 (article page number 139)
+% The indices of the outliers can be found using the data cursor: click on
+% a sample in the graph to see the subject number i.
 fprintf '\nExcluding subjects 78 and 80 (outliers):\n'
 iEx = [78,80];
 lEx = (n==78) | (n==80); % alternative: logical indices
@@ -332,6 +334,12 @@ ax(2) = subplot(2,1,2);
 % Graph subject mean against within-subject standard deviation for each
 % method separately.
 ba(ax, cellRV,cellIC, 'XName',RVName, 'YName',ICName, 'PlotMeanSD', true)
+
+% Figure 10 in BA1999 p. 156
+f10 = figure;
+
+ba(f10, cellRV,cellIC, 'XName',RVName, 'YName',ICName, ...
+    'PlotMeanDifference',true)
 
 %% 5.3 Replicated data in pairs (article p. 156)
 disp 'Section 5.3 Replicated data in pairs'
