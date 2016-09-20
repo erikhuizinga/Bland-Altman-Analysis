@@ -66,7 +66,7 @@ if any(doPlot)
     if isempty(ax)
         if nPlot>1
             for n = nPlot:-1:1
-                ax(n) = subplot(1,nPlot,n);
+                ax(n) = subplot(nPlot,1,n);
             end
         else
             ax = axes;
