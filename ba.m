@@ -151,6 +151,20 @@ function varargout = ba(varargin)
 %   will have the same slope as the bias line. This assumption holds if the
 %   slope of the upper and lower limits of agreement do not differ
 %   significantly from the slope of the bias regression line.
+%   
+%   'ConstantTrueValue': Assume constant true value
+%   true (default) | false
+%   Assume the true value being measured by x and y is constant. This
+%   assumption is true for repeated measurements of the same constant
+%   quantity. For example, repeated measurements of a subject's blood
+%   pressure within the same minute can be assumed to be constant. If this
+%   is to be assumed in the calculations, specify the
+%   'ConstantTrueValue',true pair argument. If the repeated measurements
+%   are of a quantity that changes from measurement to measurement, this
+%   assumption does not hold. For example, blood pressure measured on
+%   multiple occasions throughout a day is expected to change over time,
+%   hence over repeated measurements as well. If a varying true value is
+%   assumed, specify the 'ConstantTrueValue',false pair argument.
 %
 %   Output
 %   The only output argument s is optional. It is a scalar structure
@@ -306,7 +320,8 @@ function varargout = ba(varargin)
 
 %% inputs
 % demo if no input arguments
-if ~nargin, ba1999demo, return, end
+if ~nargin, ba
+    demo, return, end
 
 in = varargin;
 
@@ -327,6 +342,7 @@ p = inputParser;
 p.addRequired('x',@validateXY)
 p.addRequired('y',@validateXY)
 p.addOptional('a',.05,@isnumeric)
+p.addParameter('Exclude',[],@validatelogical)
 p.addParameter('XName',inputname(ixname),@ischar)
 p.addParameter('YName',inputname(iyname),@ischar)
 p.addParameter('PlotDefault',false,@validatelogical)
@@ -334,9 +350,9 @@ p.addParameter('PlotMeanDifference',false,@validatelogical)
 p.addParameter('PlotMeanRatio',false,@validatelogical)
 p.addParameter('PlotMeanSD',false,@validatelogical)
 p.addParameter('PlotCorrelation',false,@validatelogical)
-p.addParameter('Exclude',[],@validatelogical)
 p.addParameter('PlotStatistics','none',@ischar)
 p.addParameter('ConstantResidualVariance',false,@validatelogical)
+p.addParameter('ConstantTrueValue',true,@validatelogical)
 p.addParameter('Transform',@(x) x,@(f) isa(f,'function_handle')|ischar(f))
 
 % parse inputs
@@ -395,8 +411,10 @@ switch lower(char(transFun)) % detect supported transformations
     otherwise % no transformation
 end
 
+doCTV = logical(ConstantTrueValue);
+
 %% Bland-Altman analysis
-out = baloa( ...
+out = baloa( ... % Bland-Altman Limits of Agreement
     xok, xName, yok, yName, a, ...
     doPlotMD, axMD, ...
     doPlotMR, axMR, ...
@@ -404,7 +422,7 @@ out = baloa( ...
     doPlotC, axC, ...
     doPlotBasicStats, doPlotExtendedStats, ...
     doPlotRegStats, doConstantRegression, ...
-    doRepeated);
+    doRepeated, doCTV);
 
 %% output
 if nargout, varargout = out; end
