@@ -31,12 +31,10 @@ if haveCell
     X = [x{:}];
     Y = [y{:}];
 else
-    x = x.';
-    X = x(:).';
-    x = x.';
-    y = y.';
-    Y = y(:).';
-    y = y.';
+    X = transpose(x);
+    X = X(:);
+    Y = transpose(y);
+    Y = Y(:);
 end
 
 % determine number of replicates
@@ -46,14 +44,14 @@ else
     m = size(x,2)*ones(size(x,1),1);
 end
 % The number of replicates m is the same for x and y, because parseXY makes
-% sure only pairs of observations are kept. m is a n×1 vector.
+% sure only pairs of observations are kept. m is an nÃ—1 vector.
 
 %% ANOVA
 % prepare for one-way ANOVA
 for sub = n:-1:1
     subjects{sub} = sub*ones(1,m(sub));
 end
-subjects = [subjects{:}]; % subject numbers, ‘groups’ in ANOVA
+subjects = [subjects{:}]; % subject numbers, â€˜groupsâ€™ in ANOVA
 
 % subject mean
 if haveCell
@@ -71,7 +69,7 @@ else
     % perform one-way ANOVA
     N = numel(X); % equals numel(Y)
     dfE = N-n; % error degrees of freedom
-    for sub = n:-1:1 % loop over subjects, ‘groups’ in ANOVA
+    for sub = n:-1:1 % loop over subjects, â€˜groupsâ€™ in ANOVA
         % squared errors per subject
         SEX(sub) = sum( ( X(subjects==sub)-muXW(sub) ).^2 );
         SEY(sub) = sum( ( Y(subjects==sub)-muYW(sub) ).^2 );
@@ -171,7 +169,8 @@ varargout = { ...
     muS,muSCI, ...
     eLoa,eS, ...
     sS, ...
-    polyMuS,msePolyMuS,sResPolyMuS,polyLLoa,polyULoa ...
+    polyMuS,msePolyMuS,sResPolyMuS,polyLLoa,polyULoa, ...
+    m,X,Y ...
     };
 end
 
