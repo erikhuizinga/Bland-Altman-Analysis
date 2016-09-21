@@ -410,7 +410,7 @@ switch lower(char(transFun)) % detect supported transformations
     otherwise % no transformation
 end
 
-doCTV = logical(ConstantTrueValue);
+assumeCTV = logical(ConstantTrueValue);
 
 %% Bland-Altman analysis
 out = baloa( ... % Bland-Altman Limits of Agreement
@@ -421,7 +421,7 @@ out = baloa( ... % Bland-Altman Limits of Agreement
     doPlotC, axC, ...
     doPlotBasicStats, doPlotExtendedStats, ...
     doPlotRegStats, doConstantRegression, ...
-    doRepeated, doCTV);
+    doRepeated, assumeCTV);
 
 %% output
 if nargout, varargout = out; end

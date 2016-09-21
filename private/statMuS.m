@@ -23,7 +23,7 @@ end
 
 %% input
 % parse inputs
-[x,y,~,n,z,t,doConstantRegression,doCTV] = varargin{:};
+[x,y,~,n,z,t,doConstantRegression,assumeCTV] = varargin{:};
 haveCell = iscell(x);
 
 % vectorise x and y into X and Y and calculate the vectorised statistic
@@ -78,7 +78,7 @@ else
     % total number of observation pairs
     N = numel(X); % equals numel(Y)
     
-    if doCTV
+    if assumeCTV
         %% assume constant true value
         
         % mean statistic, i.e. bias
