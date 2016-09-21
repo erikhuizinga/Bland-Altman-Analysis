@@ -104,7 +104,7 @@ rSMuD = s.difference.rSMu;
 % Article: 0.07 (p. 140), here -0.03, so an error exists either here or in
 % the article. Either way, the correlation is not significantly different
 % from zero: see s.difference.pRSMu.
-display(rSMuD); % Spearman rank correlation between mean and difference
+display(rSMuD) % Spearman rank correlation between mean and difference
 
 % Figure 3 is equal to figure 2, but has added limits of agreement. It
 % corresponds to article figure 3.
@@ -294,17 +294,17 @@ display(muD) % BA1999 p. 151: -15.62 mmHg
 sD = s.difference.s; % standard deviation of the difference
 display(sD) % BA1999 p. 152: 20.95 mmHg
 loaD = s.difference.loa; % limits of agreement
-display(loaD); % BA1999 p. 152: [-56.68, 25.44] mmHg
+display(loaD) % BA1999 p. 152: [-56.68, 25.44] mmHg
 % Notice how the values of muD, sD and loa are very similar to those of
 % section 2, which is to be expected (they do not change for repeated
 % measurements).
 
 % more results
 muDCI = s.difference.muCI;
-display(muDCI); % BA1999:
+display(muDCI) % BA1999:
 % value not presented, but notice similarity to muDCI in section 2.
 loaDCI = s.difference.loaCI;
-display(loaDCI); % BA1999 p. 153:
+display(loaDCI) % BA1999 p. 153:
 % [-63.5, 18.70
 %  -49.9, 32.2] mmHg
 % The article uses an incorrect calculation, because it uses 1.96. This
@@ -360,8 +360,22 @@ f10 = figure;
 
 % Perform Bland-Altman Analysis for repeated measurements with unequal
 % replicates.
-ba(f10, cellRV,cellIC, 'XName',RVName, 'YName',ICName, ...
-    'PlotMeanDifference',true)
+s = ba(f10, cellRV,cellIC, 'XName',RVName, 'YName',ICName, ...
+    'PlotMeanDifference',true);
+
+% show results
+muD = s.difference.mu; % mean difference, i.e. bias
+display(muD) % BA1999: 0.7092
+loa = s.difference.loa; % limits of agreement
+display(loa) % BA1999: loa = [-1.3521, 2.7705]
+
+% more results
+muDCI = s.difference.muCI;
+display(muDCI) % BA1999:
+% value not presented, but given here for completeness
+loaDCI = s.difference.loaCI;
+display(loaDCI) % BA1999:
+% value not presented, but given here for completeness
 
 % some text output
 f = [f9;f10];
