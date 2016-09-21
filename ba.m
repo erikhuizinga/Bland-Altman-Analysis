@@ -320,8 +320,7 @@ function varargout = ba(varargin)
 
 %% inputs
 % demo if no input arguments
-if ~nargin, ba
-    demo, return, end
+if ~nargin, bademo, return, end
 
 in = varargin;
 
