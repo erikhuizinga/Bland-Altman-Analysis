@@ -106,31 +106,87 @@ else
         % perform one-way ANOVA
         for sub = n:-1:1 % loop over subjects, groups in ANOVA
             % squared residual (SR) effect, per subject
-            SRD(sub) = sum( ( S(subjects==sub)-muSWithin(sub) ).^2 );
+            SRS(sub) = sum( ( S(subjects==sub)-muSWithin(sub) ).^2 );
         end
         % SSS, sum of squared subjects effect
-        SSSD = m.'*( muSWithin-muSGlobal ).^2;
+        SSSS = m.'*( muSWithin-muSGlobal ).^2;
         
         % MSS, mean squared subjects effect
-        MSSS = SSSD/(n-1);
+        MSSS = SSSS/(n-1);
         
         % SSR, sum of squared residual effects
-        SSRD = sum(SRD);
+        SSRS = sum(SRS);
         
         % MSR, mean squared residual effect
         dfR = N-n; % residual degrees of freedom
-        MSRS = SSRD/dfR;
+        MSRS = SSRS/dfR;
         
         % estimates of within-subject component variance
         varSWithin = MSRS;
         
         % estimate of between-subject component variance
-        divisor = (N*N-m'*m)/(n-1)/N;
+        divisor = (N^2-m'*m)/(n-1)/N;
         varSBetween = (MSSS-MSRS)/divisor;
         
         % estimate of total variance and standard deviation
         varTotalS = varSBetween + varSWithin;
         sTotalS = sqrt(varTotalS);
+        
+        % variance of the variance of components
+        % The following two calculations are from the book Searle 2009. In
+        % this function, the following variables refer to the following
+        % book variables:
+        % N: N
+        % n: alpha
+        % m: n
+        % varSWithin: sigma_e^2
+        % varSBetween: sigma_alpha^2
+        varVarSWithin = 2*varSWithin^2/(N-n); % Searle 2006 p. 74 eq. 95
+        
+        % The book Searle 2006 Variance Components p. 75 eq. 102 gives:
+        varVarSBetweenSearle2006 = ...
+            2*N/( N^2 - m'*m ) ...
+            * ( N*(N-1)*(n-1)/((N-n)*( N^2 - m'*m )) * varSWithin^2 + 2*varSWithin*varSBetween ...
+            + ( N^2*(m'*m) + (m'*m)^2 - 2*N*sum(m.^3) )/( N*( N^2-m'*m ) ) * varSBetween^2 );
+        % The formula of varVarSBetween above is written in the same order
+        % as in Searle 2006 p. 75 eq. 102.
+        
+        %{
+        % % The book Sahai 2005 gives three estimates from Crump and Searle:
+        %
+        % % Crump 1951 (from Sahai 2005 p. 124-5 eq. 11.6.4)
+        % n0 = divisor; % see also Sahai 2005 p. 96
+        % w = m*varSWithin./( varSWithin + m*varSBetween );
+        % varVarSBetweenCrump1951 = ...
+        %     2*varSWithin^2/n0^2 * ( 1/(n-1)^2 * (( 1/N*sum( m.^2./w.^2 ))^2 ...
+        %     + sum( m.^2./w.^2 ) - 2/N*sum( m.^3./w.^3 )) + 1/(N-n) );
+        % % Note: not the same (not even close) as
+        % % varVarSBetweenSearle2006, which leads me to believe something's
+        % % wrong in varVarSBetweenCrump1951 %FIXME
+        %
+        % % Searle 1956 (from Sahai 2005 p. 125 eq. 11.6.5)
+        % tau = varSBetween/varSWithin;
+        % varVarSBetweenSearle1956 = ...
+        %     2*varSWithin^2/n0^2*( 1/( N*(n-1)^2 ) * ( tau^2/N * ( N^2*(m'*m) + (m'*m)^2 - 2*N*sum(m.^3) ) ...
+        %     + 2*tau*( N^2 - m'*m )) + ( N-1 )/( (n-1)*(N-n)));
+        % % Note: the same result as varVarSBetweenSearle2006 (logically)
+        %
+        % % Sahai 2005 also gives an alternative notation of the same Searle
+        % % 1956 formula (Saha 2005 p. 125 eq. 11.6.6)
+        % varVarSBetweenSearle1956Alternative = ...
+        %     2*varSWithin^2 * ( tau^2 * ( N^2*(m'*m) + (m'*m)^2 - 2*N*sum(m.^3) )/( N^2 - m'*m )^2 ...
+        %     + 2*tau*N /( N^2 - m'*m ) + N^2*(N-1)*(n-1) /(( N^2 - m'*m )^2 * ( N-n )));
+        % % Note: the same result as varVarSBetweenSearle2006 (logically)
+        %}
+        
+        %%
+        % variance of the global mean statistic, i.e. bias (muSGlobal)
+        % From Sahai 2005 p. 102
+        varMuSGlobal = sum( m.*( varSWithin + m*varSBetween )/N^2 );
+        sMuSGlobal = sqrt(varMuSGlobal);
+        
+        
+        
     end
 end
 
