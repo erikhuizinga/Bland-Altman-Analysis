@@ -357,8 +357,15 @@ ba(ax, cellRV,cellIC, 'XName',RVName, 'YName',ICName, 'PlotMeanSD', true)
 % Figure 10 in BA1999 p. 156
 f10 = figure;
 
+% Perform Bland-Altman Analysis for repeated measurements with unequal
+% replicates.
 ba(f10, cellRV,cellIC, 'XName',RVName, 'YName',ICName, ...
     'PlotMeanDifference',true)
+
+% some text output
+f = [f9;f10];
+fn = [f.Number];
+disp(['See also figures [' num2str(fn) '].'])
 
 %% 5.3 Replicated data in pairs (article p. 156)
 disp 'Section 5.3 Replicated data in pairs'
