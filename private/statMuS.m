@@ -45,15 +45,9 @@ else
     m = size(x,2)*ones(size(x,1),1);
 end
 % The number of replicates m is the same for x and y, because parseXY makes
-% sure only pairs of observations are kept. m is an nÃ—1 vector.
+% sure only pairs of observations are kept. m is an n×1 vector.
 
-%% ANOVA
-% prepare for one-way ANOVA
-for sub = n:-1:1
-    subjects{sub} = sub*ones(1,m(sub));
-end
-subjects = [subjects{:}]; % subject numbers, groups in ANOVA
-
+%% within subject means
 % subject mean
 if haveCell
     muXWithin = cellfun(@mean,x);
@@ -66,51 +60,78 @@ end
 % subject mean statistic, which is the statistic to plot as well
 muSWithin = SFun(muXWithin,muYWithin); % SFun is the statistic function
 
-% global mean statistic
-muSGlobal = mean(S);
-
 if all(m==1)
+    %% no repeated measurements
     varXWithin = 0;
     varYWithin = 0;
 else
-    % perform one-way ANOVA
-    N = numel(X); % equals numel(Y)
-    for sub = n:-1:1 % loop over subjects, groups in ANOVA
-        % squared residual (SR) effect, per subject
-        SRX(sub) = sum( ( X(subjects==sub)-muXWithin(sub) ).^2 );
-        SRY(sub) = sum( ( Y(subjects==sub)-muYWithin(sub) ).^2 );
-        SRD(sub) = sum( ( S(subjects==sub)-muSWithin(sub) ).^2 );
-        % squared 
+    %% repeated measurements with (un)equal numbers of replicates
+    % prepare for one-way ANOVA
+    for sub = n:-1:1
+        subjects{sub} = sub*ones(1,m(sub));
     end
-    % SSS, sum of squared subjects effect
-    SSSD = m.'*( muSWithin-muSGlobal ).^2;
+    subjects = [subjects{:}]; % subject numbers, groups in ANOVA
     
-    % MSS, mean squared subjects effect
-    MSSS = SSSD/(n-1);
+    % global mean statistic, i.e. bias
+    muSGlobal = mean(S);
     
-    % SSR, sum of squared residual effects
-    SSRX = sum(SRX);
-    SSRY = sum(SRY);
-    SSRD = sum(SRD);
+    % total number of observation pairs
+    N = numel(X); % equals numel(Y)
     
-    % MSR, mean squared residual effect
-    dfR = N-n; % residual degrees of freedom
-    MSRX = SSRX/dfR;
-    MSRY = SSRY/dfR;
-    MSRS = SSRD/dfR;
-    
-    % estimates of within-subject component variance
-    varXWithin = MSRX;
-    varYWithin = MSRY;
-    varSWithin = MSRS;
-    
-    % estimate of between-subject component variance
-    divisor = (N*N-m'*m)/(n-1)/N;
-    varSBetween = (MSSS-MSRS)/divisor;
-    
-    % estimate of total variance and standard deviation
-    varTotalS = varSBetween + varSWithin;
-    sTotalS = sqrt(varTotalS);
+    if doCTV
+        %% assume constant true value
+        
+        % perform one-way ANOVA
+        for sub = n:-1:1 % loop over subjects, groups in ANOVA
+            % squared residual (SR) effect, per subject
+            SRX(sub) = sum( ( X(subjects==sub)-muXWithin(sub) ).^2 );
+            SRY(sub) = sum( ( Y(subjects==sub)-muYWithin(sub) ).^2 );
+        end
+        
+        % SSR, sum of squared residual effects
+        SSRX = sum(SRX);
+        SSRY = sum(SRY);
+        
+        % MSR, mean squared residual effect
+        dfR = N-n; % residual degrees of freedom
+        MSRX = SSRX/dfR;
+        MSRY = SSRY/dfR;
+        
+        % estimates of within-subject component variance
+        varXWithin = MSRX;
+        varYWithin = MSRY;
+    else
+        %% assume variable true value
+        
+        % perform one-way ANOVA
+        for sub = n:-1:1 % loop over subjects, groups in ANOVA
+            % squared residual (SR) effect, per subject
+            SRD(sub) = sum( ( S(subjects==sub)-muSWithin(sub) ).^2 );
+        end
+        % SSS, sum of squared subjects effect
+        SSSD = m.'*( muSWithin-muSGlobal ).^2;
+        
+        % MSS, mean squared subjects effect
+        MSSS = SSSD/(n-1);
+        
+        % SSR, sum of squared residual effects
+        SSRD = sum(SRD);
+        
+        % MSR, mean squared residual effect
+        dfR = N-n; % residual degrees of freedom
+        MSRS = SSRD/dfR;
+        
+        % estimates of within-subject component variance
+        varSWithin = MSRS;
+        
+        % estimate of between-subject component variance
+        divisor = (N*N-m'*m)/(n-1)/N;
+        varSBetween = (MSSS-MSRS)/divisor;
+        
+        % estimate of total variance and standard deviation
+        varTotalS = varSBetween + varSWithin;
+        sTotalS = sqrt(varTotalS);
+    end
 end
 
 %% limits of agreement
