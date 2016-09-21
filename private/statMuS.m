@@ -98,20 +98,20 @@ else
     MSRX = SSRX/dfR;
     MSRY = SSRY/dfR;
     MSRS = SSRD/dfR;
+    
+    % estimates of within-subject component variance
+    varXWithin = MSRX;
+    varYWithin = MSRY;
+    varSWithin = MSRS;
+    
+    % estimate of between-subject component variance
+    divisor = (N*N-m'*m)/(n-1)/N;
+    varSBetween = (MSSS-MSRS)/divisor;
+    
+    % estimate of total variance and standard deviation
+    varTotalS = varSBetween + varSWithin;
+    sTotalS = sqrt(varTotalS);
 end
-
-% estimates of within-subject component variance
-varXWithin = MSRX;
-varYWithin = MSRY;
-varSWithin = MSRS;
-
-% estimate of between-subject component variance
-divisor = (N*N-m'*m)/(n-1)/N;
-varSBetween = (MSSS-MSRS)/divisor;
-
-% estimate of total variance and standard deviation
-varTotalS = varSBetween + varSWithin;
-sTotalS = sqrt(varTotalS);
 
 %% limits of agreement
 % variance of the mean statistic
