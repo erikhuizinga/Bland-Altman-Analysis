@@ -64,6 +64,9 @@ if all(m==1)
     %% no repeated measurements
     varXWithin = 0;
     varYWithin = 0;
+    
+    % overall mean statistic, i.e. bias
+    muS = mean(muSWithin);
 else
     %% repeated measurements with (un)equal numbers of replicates
     % prepare for one-way ANOVA
@@ -72,14 +75,14 @@ else
     end
     subjects = [subjects{:}]; % subject numbers, groups in ANOVA
     
-    % global mean statistic, i.e. bias
-    muSGlobal = mean(S);
-    
     % total number of observation pairs
     N = numel(X); % equals numel(Y)
     
     if doCTV
         %% assume constant true value
+        
+        % mean statistic, i.e. bias
+        muS = mean(SFun(muXWithin,muYWithin)); % BA1999§5.2
         
         % perform one-way ANOVA
         for sub = n:-1:1 % loop over subjects, groups in ANOVA
@@ -103,13 +106,16 @@ else
     else
         %% assume variable true value
         
+        % mean statistic, i.e. bias
+        muS = mean(S); % according to BA1999§5.3 and BA2007§3
+        
         % perform one-way ANOVA
         for sub = n:-1:1 % loop over subjects, groups in ANOVA
             % squared residual (SR) effect, per subject
             SRS(sub) = sum( ( S(subjects==sub)-muSWithin(sub) ).^2 );
         end
         % SSS, sum of squared subjects effect
-        SSSS = m.'*( muSWithin-muSGlobal ).^2;
+        SSSS = m.'*( muSWithin-muS ).^2;
         
         % MSS, mean squared subjects effect
         MSSS = SSSS/(n-1);
@@ -182,11 +188,8 @@ else
         %%
         % variance of the global mean statistic, i.e. bias (muSGlobal)
         % From Sahai 2005 p. 102
-        varMuSGlobal = sum( m.*( varSWithin + m*varSBetween )/N^2 );
-        sMuSGlobal = sqrt(varMuSGlobal);
-        
-        
-        
+        varMuS = sum( m.*( varSWithin + m*varSBetween )/N^2 );
+        sMuS = sqrt(varMuS);
     end
 end
 
@@ -203,9 +206,6 @@ varS = varMuS + corrM*varXWithin + corrM*varYWithin;
 
 % standard deviation of statistic for single obsevations by the methods
 sS = sqrt(varS);
-
-% overall mean statistic, i.e. bias
-muS = mean(muSWithin);
 
 % limits of agreement
 loa = muS + z*sS*[-1 1];
