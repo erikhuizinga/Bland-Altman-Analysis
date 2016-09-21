@@ -60,16 +60,24 @@ end
 % subject mean statistic, which is the statistic to plot as well
 muSWithin = SFun(muXWithin,muYWithin); % SFun is the statistic function
 
+%% calculate standard deviation of the statistic
 if all(m==1)
     %% no repeated measurements
-    varXWithin = 0;
-    varYWithin = 0;
-    
     % overall mean statistic, i.e. bias
     muS = mean(muSWithin);
+    
+    % variance of the statistic for single obsevations by the methods
+    varS = var(muSWithin);
+    
+    % standard deviation of statistic for single obsevations by the methods
+    sS = sqrt(varS);
+    
+    % within-subject variance is zero without replicates
+    varXWithin = 0;
+    varYWithin = 0;
 else
-    %% repeated measurements with (un)equal numbers of replicates
-    % prepare for one-way ANOVA
+    %% repeated measurements with equal/unequal numbers of replicates
+    % prepare for ANOVA
     for sub = n:-1:1
         subjects{sub} = sub*ones(1,m(sub));
     end
@@ -78,9 +86,11 @@ else
     % total number of observation pairs
     N = numel(X); % equals numel(Y)
     
+    % correction term factor
+    corrM = 1-mean(1./m); % equals 1/n*sum(1./m), i.e. BA1999 notation
+    
     if assumeCTV
         %% assume constant true value
-        
         % mean statistic, i.e. bias
         muS = mean(SFun(muXWithin,muYWithin)); % BA1999§5.2
         
@@ -103,9 +113,17 @@ else
         % estimates of within-subject component variance
         varXWithin = MSRX;
         varYWithin = MSRY;
+        
+        % variance of the mean statistic for each subject
+        varMuS = var(muSWithin);
+        
+        % variance of the statistic for single obsevations by the methods
+        varS = varMuS + corrM*varXWithin + corrM*varYWithin; % BA1999 eq. 5.13
+        
+        % standard deviation of the statistic for single obsevations by the methods
+        sS = sqrt(varS);
     else
         %% assume variable true value
-        
         % mean statistic, i.e. bias
         muS = mean(S); % according to BA1999§5.3 and BA2007§3
         
@@ -134,9 +152,10 @@ else
         divisor = (N^2-m'*m)/(n-1)/N;
         varSBetween = (MSSS-MSRS)/divisor;
         
-        % estimate of total variance and standard deviation
-        varTotalS = varSBetween + varSWithin;
-        sTotalS = sqrt(varTotalS);
+        % estimate of total variance and standard deviation of the
+        % statistic for single observations by the methods
+        varS = varSBetween + varSWithin; % BA1999 p. 157 first eq.
+        sS = sqrt(varS);
         
         % variance of the variance of components
         % The following two calculations are from the book Searle 2009. In
@@ -186,7 +205,7 @@ else
         %}
         
         %%
-        % variance of the global mean statistic, i.e. bias (muSGlobal)
+        % variance of the global mean statistic, i.e. bias
         % From Sahai 2005 p. 102
         varMuS = sum( m.*( varSWithin + m*varSBetween )/N^2 );
         sMuS = sqrt(varMuS);
@@ -194,50 +213,37 @@ else
 end
 
 %% limits of agreement
-% variance of the mean statistic
-varMuS = var(muSWithin);
-
-% correction term
-corrM = 1-sum(1./m)/n; % equals mean(1./m), but this is BA1999's notation
-
-% variance of the statistic
-varS = varMuS + corrM*varXWithin + corrM*varYWithin;
-% This is BA1999 eq. 5.13
-
-% standard deviation of statistic for single obsevations by the methods
-sS = sqrt(varS);
-
-% limits of agreement
 loa = muS + z*sS*[-1 1];
 
-%% calculation of the mean
-% subject mean to plot
-mu = mean([muXWithin,muYWithin],2);
+%% subject mean to plot
+muWithin = mean([muXWithin,muYWithin],2);
 
 %% linear regression statistics
 % linear regression of mean and S to plot with plotM
 [polyMuS,msePolyMuS,sResPolyMuS,polyLLoa,polyULoa] = ...
-    baLinReg(mu,muSWithin,z,doConstantRegression);
+    baLinReg(muWithin,muSWithin,z,doConstantRegression);
 
-%% confidence interval of the overall mean statistic (muS, i.e. bias)
+%% confidence interval of the mean statistic (bias)
 se2S = varS/n; % squared standard error of the bias
-seS = sqrt(se2S); % standard error
+seS = sqrt(se2S); % bias standard error
 eS = t*seS; % bias error
-muSCI = muS + eS*[-1 1]; % confidence interval
+muSCI = muS + eS*[-1 1]; % bias confidence interval
 
 %% confidence interval of the limits of agreement (loa)
 if haveCell
+    % unequal numbers of replicates
     varXW = cellfun(@(v) var(v,[],2),x);
     varYW = cellfun(@(v) var(v,[],2),y);
 else
+    % no or equal numbers of replicates
     varXW = var(x,[],2);
     varYW = var(y,[],2);
 end
-varVarXW = sum(2*varXW.^2./(m-1))/n/n; % BA1999 eq. 5.4, adjusted for unequal replicates
-varVarYW = sum(2*varYW.^2./(m-1))/n/n;
+varVarXW = sum(2*varXW.^2./(m-1))/n^2; % BA1999 eq. 5.4, adjusted for unequal replicates
+varVarYW = sum(2*varYW.^2./(m-1))/n^2;
 % note these reduce to eq. 5.4 for equal replicates
 
-% these are nan in case all(mx==1)&all(my==1)
+% they are NaN in case all(mx==1)&all(my==1)
 if isnan(varVarXW); varVarXW = 0; end
 if isnan(varVarYW); varVarYW = 0; end
 
@@ -269,7 +275,7 @@ loaCI = [loa;loa] + eLoa*[-1 -1;1 1];
 
 %% output
 varargout = { ...
-    mu,muSWithin, ...
+    muWithin,muSWithin, ...
     varXWithin,varYWithin, ...
     loaCI,loa, ...
     muS,muSCI, ...
