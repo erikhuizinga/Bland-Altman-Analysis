@@ -352,7 +352,8 @@ ax(2) = subplot(2,1,2);
 
 % Graph subject mean against within-subject standard deviation for each
 % method separately.
-ba(ax, cellRV,cellIC, 'XName',RVName, 'YName',ICName, 'PlotMeanSD', true)
+ba(ax, cellRV,cellIC, 'XName',RVName, 'YName',ICName, ...
+    'PlotMeanSD',true, 'PlotStatistics','basic')
 
 % Figure 10 in BA1999 p. 156
 f10 = figure;
@@ -378,9 +379,9 @@ disp 'Section 5.3 Replicated data in pairs'
 % value varies’) p. 575 onwards.
 
 % BA2007 Figure 3
-f = figure;
+f11 = figure;
 
-s = ba(f, ...
+s = ba(f11, ...
     cellRV,cellIC, ...
     'XName',RVName, 'YName',ICName, ...
     'PlotMeanSD',true, 'ConstantTrueValue',false);
