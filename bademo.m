@@ -258,7 +258,7 @@ s = ba(f8, Trig,Gerber, 'XName',TName, 'YName',GName, ...
 sPolyResidualD = s.difference.sPolyResidual;
 display(sPolyResidualD) % article: 0.08033 (s_d on p. 148)
 % Erratum: the article shows a slightly different value. This is less than
-% 1.2% error, but still, the difference is there.
+% 1.2% error, but the difference is there.
 
 % some text output
 f = [f7;f8];
