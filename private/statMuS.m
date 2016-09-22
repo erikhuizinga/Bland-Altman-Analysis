@@ -172,7 +172,7 @@ else
         % m: n
         % varSWithin: sigma_e^2
         % varSBetween: sigma_alpha^2
-        varVarSWithin = 2*varSWithin^2/(N-n); % Searle 2006 p. 74 eq. 95
+        varVarSWithin = 2*varSWithin^2/(N-n); % Searle 2006 p. 74 eq. 95 and Sahai 2005 p. 124 eq. 11.6.3
         
         % The book Searle 2006 Variance Components p. 75 eq. 102 gives:
         varVarSBetweenSearle2006 = ...
@@ -202,18 +202,25 @@ else
         % % Note: the same result as varVarSBetweenSearle2006 (logically)
         %
         % % Sahai 2005 also gives an alternative notation of the same Searle
-        % % 1956 formula (Saha 2005 p. 125 eq. 11.6.6)
+        % % 1956 formula (Sahai 2005 p. 125 eq. 11.6.6)
         % varVarSBetweenSearle1956Alternative = ...
         %     2*varSWithin^2 * ( tau^2 * ( N^2*(m'*m) + (m'*m)^2 - 2*N*sum(m.^3) )/( N^2 - m'*m )^2 ...
         %     + 2*tau*N /( N^2 - m'*m ) + N^2*(N-1)*(n-1) /(( N^2 - m'*m )^2 * ( N-n )));
         % % Note: the same result as varVarSBetweenSearle2006 (logically)
+        % 
+        % % Sahai 2005 p. 125 mentions another alternative:
+        % % Rao 1997 p. 20 eq. 2.39
+        % V = varSBetween + varSWithin./m;
+        % varVarSBetweenRao1997 = ...
+        %     2*N^2/( N^2 - m'*m )^2 ...
+        %     *( sum( (m.^2).*( 1-2*m./N ).*V ) + ( (m.^2)'*V/N )^2 + (n-1)^2/(N-n)*varSWithin^2 );
         %}
         
         %%
         % variance of the global mean statistic, i.e. bias
         % From Sahai 2005 p. 102
-        varMuS = sum( m.*( varSWithin + m*varSBetween )/N^2 );
-        sMuS = sqrt(varMuS);
+        varMuS = m'*( varSWithin + m*varSBetween )/N^2;
+        % sMuS = sqrt(varMuS);
     end
 end
 
