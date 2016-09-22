@@ -37,6 +37,7 @@ else
     Y = Y(:);
 end
 S = SFun(X,Y); % vectorised statistic
+% X, Y and S now are row vectors of individual observations
 
 % determine number of replicates
 if haveCell
@@ -62,19 +63,23 @@ muSWithin = SFun(muXWithin,muYWithin); % SFun is the statistic function
 
 %% calculate standard deviation of the statistic
 if all(m==1)
-    %% no repeated measurements
+    %% no repeated measurements, i.e. single mearuements
     % overall mean statistic, i.e. bias
     muS = mean(muSWithin);
     
     % variance of the statistic for single obsevations by the methods
     varS = var(muSWithin);
+    varMuS = varS; % for single measurements
     
     % standard deviation of statistic for single obsevations by the methods
     sS = sqrt(varS);
     
-    % within-subject variance is zero without replicates
+    % within-subject variance is zero for single measurements
     varXWithin = 0;
     varYWithin = 0;
+    
+    % correction term factor is zero for single measurements
+    corrM = 0;
 else
     %% repeated measurements with equal/unequal numbers of replicates
     % prepare for ANOVA
@@ -89,36 +94,36 @@ else
     % correction term factor
     corrM = 1-mean(1./m); % equals 1/n*sum(1./m), i.e. BA1999 notation
     
+    % perform one-way ANOVA on X and Y with subject as groups
+    for sub = n:-1:1 % loop over subjects
+        % squared residual (SR) effect, per subject
+        SRX(sub) = sum( ( X(subjects==sub)-muXWithin(sub) ).^2 );
+        SRY(sub) = sum( ( Y(subjects==sub)-muYWithin(sub) ).^2 );
+    end
+    
+    % SSR, sum of squared residual effects
+    SSRX = sum(SRX);
+    SSRY = sum(SRY);
+    
+    % MSR, mean squared residual effect
+    dfR = N-n; % residual degrees of freedom
+    MSRX = SSRX/dfR;
+    MSRY = SSRY/dfR;
+    
+    % estimates of within-subject component variance
+    varXWithin = MSRX;
+    varYWithin = MSRY;
+    
     if assumeCTV
         %% assume constant true value
         % mean statistic, i.e. bias
         muS = mean(SFun(muXWithin,muYWithin)); % BA1999§5.2
         
-        % perform one-way ANOVA
-        for sub = n:-1:1 % loop over subjects, groups in ANOVA
-            % squared residual (SR) effect, per subject
-            SRX(sub) = sum( ( X(subjects==sub)-muXWithin(sub) ).^2 );
-            SRY(sub) = sum( ( Y(subjects==sub)-muYWithin(sub) ).^2 );
-        end
-        
-        % SSR, sum of squared residual effects
-        SSRX = sum(SRX);
-        SSRY = sum(SRY);
-        
-        % MSR, mean squared residual effect
-        dfR = N-n; % residual degrees of freedom
-        MSRX = SSRX/dfR;
-        MSRY = SSRY/dfR;
-        
-        % estimates of within-subject component variance
-        varXWithin = MSRX;
-        varYWithin = MSRY;
-        
         % variance of the mean statistic for each subject
         varMuS = var(muSWithin);
         
         % variance of the statistic for single obsevations by the methods
-        % BA1999 eq. 5.13
+        % BA1999 eq. 5.13, which reduces to eq. 5.2 for isscalar(unique(m))
         varS = varMuS + corrM*varXWithin + corrM*varYWithin;
         
         % standard deviation of the statistic for single obsevations by the methods
@@ -128,30 +133,30 @@ else
         % mean statistic, i.e. bias
         muS = mean(S); % according to BA1999§5.3 and BA2007§3
         
-        % perform one-way ANOVA
+        % perform one-way ANOVA on statistic
+        % SSS, sum of squared subjects effect
+        SSSS = m'*( muSWithin-muS ).^2;
+        
+        % MSS, mean squared subjects effect
+        MSSS = SSSS/(n-1);
+        
         for sub = n:-1:1 % loop over subjects, groups in ANOVA
             % squared residual (SR) effect, per subject
             SRS(sub) = sum( ( S(subjects==sub)-muSWithin(sub) ).^2 );
         end
-        % SSS, sum of squared subjects effect
-        SSSS = m.'*( muSWithin-muS ).^2;
-        
-        % MSS, mean squared subjects effect
-        MSSS = SSSS/(n-1);
         
         % SSR, sum of squared residual effects
         SSRS = sum(SRS);
         
         % MSR, mean squared residual effect
-        dfR = N-n; % residual degrees of freedom
         MSRS = SSRS/dfR;
         
         % estimates of within-subject component variance
         varSWithin = MSRS;
         
         % estimate of between-subject component variance
-        divisor = (N^2-m'*m)/(n-1)/N;
-        varSBetween = (MSSS-MSRS)/divisor;
+        n0 = (N^2-m'*m)/(n-1)/N; % see also Sahai 2005 p. 96
+        varSBetween = (MSSS-MSRS)/n0;
         
         % estimate of total variance and standard deviation of the
         % statistic for single observations by the methods
@@ -181,7 +186,6 @@ else
         % % The book Sahai 2005 gives three estimates from Crump and Searle:
         %
         % % Crump 1951 (from Sahai 2005 p. 124-5 eq. 11.6.4)
-        % n0 = divisor; % see also Sahai 2005 p. 96
         % w = m*varSWithin./( varSWithin + m*varSBetween );
         % varVarSBetweenCrump1951 = ...
         %     2*varSWithin^2/n0^2 * ( 1/(n-1)^2 * (( 1/N*sum( m.^2./w.^2 ))^2 ...
@@ -233,8 +237,8 @@ muSCI = muS + eS*[-1 1]; % bias confidence interval
 %% confidence interval of the limits of agreement (loa)
 if haveCell
     % unequal numbers of replicates
-    varXW = cellfun(@(v) var(v,[],2),x);
-    varYW = cellfun(@(v) var(v,[],2),y);
+    varXW = cellfun(@var,x);
+    varYW = cellfun(@var,y);
 else
     % no or equal numbers of replicates
     varXW = var(x,[],2);
