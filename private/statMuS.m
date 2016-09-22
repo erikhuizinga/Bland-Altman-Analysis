@@ -118,7 +118,8 @@ else
         varMuS = var(muSWithin);
         
         % variance of the statistic for single obsevations by the methods
-        varS = varMuS + corrM*varXWithin + corrM*varYWithin; % BA1999 eq. 5.13
+        % BA1999 eq. 5.13
+        varS = varMuS + corrM*varXWithin + corrM*varYWithin;
         
         % standard deviation of the statistic for single obsevations by the methods
         sS = sqrt(varS);
