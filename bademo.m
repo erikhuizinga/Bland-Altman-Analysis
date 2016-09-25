@@ -61,10 +61,12 @@ s = ba(J1,S1);
 
 % show results, compare with comments
 muD = s.difference.mu; % mean difference (bias)
-sD = s.difference.s; % standard deviation of difference
-loaD = s.difference.loa; % limits of agreement (LOA)
 display(muD) % [BA1999]: -16.29 mmHg
+
+sD = s.difference.s; % standard deviation of difference
 display(sD) % [BA1999]: 19.61 mmHg
+
+loaD = s.difference.loa; % limits of agreement (LOA)
 display(loaD) % [BA1999]: [-54.7, 22.1] mmHg
 
 % exclude subjects 78 and 80 [BA1999, p. 139]
@@ -77,13 +79,14 @@ s = ba(J1,S1, 'Exclude',iEx);
 
 % show results, compare with comments
 muD = s.difference.mu;
-loaD = s.difference.loa;
 display(muD) % [BA1999]: -14.9 mmHg
 % Erratum: a small error, probably a typo, exist in the article [BA1999].
 % Note the difference between the muD and the article's mean difference.
 % However, because the limits of agreement are the same and, of course, the
 % mean difference equals the mean of the limits of agreement, thus the
 % calculation here appears to be correct.
+
+loaD = s.difference.loa;
 display(loaD) % [BA1999]: [-43.6, 15.0] mmHg
 
 %% 2.1 Graphical presentation of agreement [BA1999 p. 140]
@@ -130,13 +133,14 @@ s = ba(f3, J1,S1, 'XName',JName, 'YName',SName, ...
 
 % show results, compare with comments
 muDCI = s.difference.muCI;
+% muDCI [BA1999, p. 142]: [-20.5 -12.1]
+display(muDCI)
+
 loaDCI = s.difference.loaCI; % confidence interval of the loa
 % loaCI [BA1999, p. 142]:
 % [-61.9, 14.9
 %  -47.5, 29.3] mmHg
 display(loaDCI)
-% muDCI [BA1999, p. 142]: [-20.5 -12.1]
-display(muDCI)
 
 % some text output
 f = f3;
@@ -200,8 +204,10 @@ s = ba(ax(2), Nadler,Hurley, 'XName',NName, 'YName',HName, ...
 % show results, compare with comments
 logMuD = s.difference.mu;
 display(logMuD) % [BA1999]: 0.099
+
 logLoaD = s.difference.loa;
 display(logLoaD) % [BA1999]: [0.056, 0.141]
+
 logLoaDCI = s.difference.loaCI;
 lowerLogLoaDCI = logLoaDCI(:,1); % lower LOA CI
 display(lowerLogLoaDCI) % [BA1999] [0.049; 0.064]
@@ -209,6 +215,7 @@ display(lowerLogLoaDCI) % [BA1999] [0.049; 0.064]
 % backtransformation of results, compare with comments
 muD = exp(logMuD);
 display(muD) % [BA1999]: 1.11
+
 loaD = exp(logLoaD);
 display(loaD) % [BA1999]: [1.06, 1.15]
 
@@ -297,13 +304,17 @@ s = ba(J,S);
 
 % show results, compare with comments
 varWithinJ = s.x.varWithin; % within-subject variance of measurements J
-varWithinS = s.y.varWithin; % within-subject variance of measurements S
 display(varWithinJ) % [BA1999, p. 151]: 37.408
+
+varWithinS = s.y.varWithin; % within-subject variance of measurements S
 display(varWithinS) % [BA1999, p. 151]: 83.141
+
 muD = s.difference.mu; % mean difference between J and S (bias)
 display(muD) % [BA1999, p. 151]: -15.62 mmHg
+
 sD = s.difference.s; % standard deviation of the difference
 display(sD) % [BA1999, p. 152]: 20.95 mmHg
+
 loaD = s.difference.loa; % limits of agreement
 display(loaD) % [BA1999, p. 152]: [-56.68, 25.44] mmHg
 % Notice how the values of muD, sD and loa are very similar to those of
@@ -314,6 +325,7 @@ display(loaD) % [BA1999, p. 152]: [-56.68, 25.44] mmHg
 muDCI = s.difference.muCI;
 display(muDCI) % [BA1999]:
 % value not presented, but notice similarity to muDCI in section 2.
+
 loaDCI = s.difference.loaCI;
 display(loaDCI) % [BA1999, p. 153]:
 % [-63.5, 18.70
@@ -371,8 +383,19 @@ s = ba(f10, cellRV,cellIC, 'XName',RVName, 'YName',ICName, ...
     'PlotMeanDifference',true);
 
 % show results, compare with comments
+varWithinRV = s.x.varWithin; % within-subject variance component from RV
+display(varWithinRV) % [BA1999]: 0.1072
+
+varWithinIC = s.y.varWithin; % within-subject variance component from IC
+display(varWithinIC) % [BA1999]: 0.1379
+
+% standard deviation of differences between single observations
+sD = s.difference.s;
+display(sD) % [BA1999]: 1.0517
+
 muD = s.difference.mu; % mean difference, i.e. bias
 display(muD) % [BA1999]: 0.7092
+
 loa = s.difference.loa; % limits of agreement
 display(loa) % [BA1999]: loa = [-1.3521, 2.7705]
 
@@ -380,6 +403,7 @@ display(loa) % [BA1999]: loa = [-1.3521, 2.7705]
 muDCI = s.difference.muCI;
 display(muDCI) % [BA1999]:
 % value not presented, but given here for completeness
+
 loaDCI = s.difference.loaCI;
 display(loaDCI) % [BA1999]:
 % value not presented, but given here for completeness
@@ -405,4 +429,4 @@ s = ba(f11, ...
     'XName',RVName, 'YName',ICName, ...
     'PlotMeanSD',true, 'ConstantTrueValue',false);
 
-
+% show results, compare with comments
