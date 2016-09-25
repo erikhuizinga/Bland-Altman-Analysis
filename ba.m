@@ -107,11 +107,27 @@ function varargout = ba(varargin)
 %
 %   'PlotMeanRatio': Create mean-ratio graph
 %   false (default) | true
-%   Creat the mean-ratio graph if the specified value is true. The
+%   Create the mean-ratio graph if the specified value is true. The
 %   mean-ratio graph is a scatter plot of the ratio between observations
 %   versus their mean. If the mean-ratio graph is created and an output
 %   arguments is specified, the output argument contains a field called
 %   ratio with the ratio statistics.
+%   
+%   'PlotMeanSD': Create mean-standard deviation graph
+%   false (default) | true | string
+%   Create the mean-standard deviation graph if the specified value is not
+%   false or 'none'. The mean-standard deviation graph is a scatter plot of
+%   a standard deviation versus the mean. The plotted standard deviation
+%   depends on the specified value. The options for the value are listed
+%   below. The standard deviation of the difference, ratio or of x and y
+%   can be plotted. If the standard deviations of x and y are plotted, two
+%   axes are required. The following values are allowed:
+%   true | 'difference' | 'single' | 'joint': plot the standard deviation
+%   of the difference versus the mean.
+%   'ratio': plot the standard deviation of the ratio versus the mean.
+%   'input' | 'both' | 'separate': plot the standard deviation of x and y
+%   in separate axes versus the mean.
+%   false (default) | 'none': no mean-standard deviation graph is created.
 %
 %   'PlotCorrelation': Create correlation graph
 %   false (default) | true
@@ -153,7 +169,7 @@ function varargout = ba(varargin)
 %   constant with respect to the mean. The variable on the vertical axis is
 %   regressed on the mean, resulting in the possibility of non-constant
 %   lines. If no plots are created, the 'PlotStatistics' value is ignored.
-%   
+%
 %   'ConstantResidualVariance': Assume constant residual variance
 %   false (default) | true
 %   Assume constant residual variance in the simple linear regression
@@ -162,7 +178,7 @@ function varargout = ba(varargin)
 %   will have the same slope as the bias line. This assumption holds if the
 %   slope of the upper and lower limits of agreement do not differ
 %   significantly from the slope of the bias regression line.
-%   
+%
 %   'ConstantTrueValue': Assume the true value is constant
 %   true (default) | false
 %   Assume the true value being measured by x and y is constant. This
@@ -232,7 +248,7 @@ function varargout = ba(varargin)
 %
 %   pRSMu: the p-value of the Spearman rank correlation for testing the
 %   hypothesis of no correlation against the alternative that there is a
-%   nonzero correlation. %TODO also output rhoXY,pRhoXY in the correlation field
+%   nonzero correlation.
 %   Example: stats.difference.pRSMu is the p-value of the Spearman rank
 %   correlation between mean and difference, to test the hypothesis of no
 %   correlation against the alternative of nonzero correlation.
@@ -302,13 +318,13 @@ function varargout = ba(varargin)
 %   About & References
 %   This MATLAB function is an implementation of the methods in the 1983,
 %   1986, 1999 and 2007 articles by Bland and Altman, especially these two:
-%   
+%
 %   [BA1999] Bland, J.M., and Altman, D.G. 1999. Measuring agreement in
 %   method comparison studies. Statistical Methods in Medical Research 8:
-%   135–160. doi:10.1191/096228099673819272.
+%   135-160. doi:10.1191/096228099673819272.
 %   [BA2007] Bland, J.M., and Altman, D.G. 2007. Agreement Between Methods
 %   of Measurement with Multiple Observations Per Individual. Journal of
-%   Biopharmaceutical Statistics 17: 571–582.
+%   Biopharmaceutical Statistics 17: 571-582.
 %   doi:10.1080/10543400701329422.
 %
 %   You might not have access to these articles. Access them through your
@@ -366,7 +382,7 @@ p.addParameter('YName',inputname(iyname),@ischar)
 p.addParameter('PlotDefault',false,@validatelogical)
 p.addParameter('PlotMeanDifference',false,@validatelogical)
 p.addParameter('PlotMeanRatio',false,@validatelogical)
-p.addParameter('PlotMeanSD',false,@validatelogical)
+p.addParameter('PlotMeanSD',false,@(s) validatelogical(s)|ischar(s))
 p.addParameter('PlotCorrelation',false,@validatelogical)
 p.addParameter('PlotStatistics','none',@ischar)
 p.addParameter('ConstantResidualVariance',false,@validatelogical)
@@ -395,7 +411,8 @@ xName = strjoin(XName,', ');
 yName = strjoin(YName,', ');
 
 % validate plot arguments
-[doPlotMD,axMD,doPlotMR,axMR,doPlotMSD,axMSD,doPlotC,axC] = ...
+[doPlotMD,axMD, doPlotMR,axMR, ...
+    MSDType, doPlotMSD1,axMSD1, doPlotMSD2,axMSD2, doPlotC,axC] = ...
     validatePlotArgs( ...
     PlotDefault, ...
     PlotMeanDifference, PlotMeanRatio, PlotMeanSD, PlotCorrelation, ...
@@ -436,7 +453,7 @@ out = baa( ... % baa: Bland-Altman Analysis
     xok, xName, yok, yName, a, ...
     doPlotMD, axMD, ...
     doPlotMR, axMR, ...
-    doPlotMSD, axMSD, ...
+    MSDType, doPlotMSD1,axMSD1, doPlotMSD2,axMSD2, ...
     doPlotC, axC, ...
     doPlotBasicStats, doPlotExtendedStats, ...
     doPlotRegStats, doConstantRegression, ...
