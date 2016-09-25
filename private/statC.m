@@ -7,5 +7,5 @@ rhoXY = rhoXY(1,2);
 pRhoXY = pRhoXY(1,2);
 
 % linear regression statistics
-[polyXY,msePXY] = baLinReg(xok,yok,z,doConReg);
+[polyXY,msePXY] = linreg(xok,yok,z,doConReg);
 end

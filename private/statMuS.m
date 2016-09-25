@@ -233,7 +233,7 @@ muWithin = mean([muXWithin,muYWithin],2);
 %% linear regression statistics
 % linear regression of mean and S to plot with plotM
 [polyMuS,msePolyMuS,sResPolyMuS,polyLLoa,polyULoa] = ...
-    baLinReg(muWithin,muSWithin,z,doConstantRegression);
+    linreg(muWithin,muSWithin,z,doConstantRegression);
 
 %% confidence interval of the mean statistic (bias)
 se2S = varS/n; % squared standard error of the bias
@@ -329,7 +329,7 @@ end
 mu = SFun(muX,muY);
 
 [polyMSD,msePolyMSD,~,polyLLoaMSD,polyULoaMSD] = ...
-    baLinReg(mu,s,z,doConstantRegression);
+    linreg(mu,s,z,doConstantRegression);
 
 % output
 out = {mu,s,polyMSD,msePolyMSD,polyLLoaMSD,polyULoaMSD};
