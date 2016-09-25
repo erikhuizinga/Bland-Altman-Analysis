@@ -3,8 +3,8 @@
 %   and 2007. The references below are used throughout this demo script.
 
 %% References
-% [BA1999] Bland, J.M., and Altman, D.G. 1999. Measuring agreement in method comparison studies. Statistical Methods in Medical Research 8: 135–160. doi:10.1191/096228099673819272.
-% [BA2007] Bland, J.M., and Altman, D.G. 2007. Agreement Between Methods of Measurement with Multiple Observations Per Individual. Journal of Biopharmaceutical Statistics 17: 571–582. doi:10.1080/10543400701329422.
+% [BA1999] Bland, J.M., and Altman, D.G. 1999. Measuring agreement in method comparison studies. Statistical Methods in Medical Research 8: 135-160. doi:10.1191/096228099673819272.
+% [BA2007] Bland, J.M., and Altman, D.G. 2007. Agreement Between Methods of Measurement with Multiple Observations Per Individual. Journal of Biopharmaceutical Statistics 17: 571-582. doi:10.1080/10543400701329422.
 % [BSOCA1993] Bowling, L.S., Sageman, W.S., O’Connor, S.M., Cole, R., and Amundson, D.E. 1993. Lack of agreement between measurement of ejection fraction by impedance cardiography versus radionuclide ventriculography. Critical Care Medicine 21: 1523–1527.
 
 %% Copyright
@@ -57,16 +57,16 @@ J1 = J(:,1);
 S1 = S(:,1);
 
 % calculate Bland-Altman statistics
-s = ba(J1,S1);
+stats = ba(J1,S1);
 
 % show results, compare with comments
-muD = s.difference.mu; % mean difference (bias)
+muD = stats.difference.mu; % mean difference (bias)
 display(muD) % [BA1999]: -16.29 mmHg
 
-sD = s.difference.s; % standard deviation of difference
+sD = stats.difference.s; % standard deviation of difference
 display(sD) % [BA1999]: 19.61 mmHg
 
-loaD = s.difference.loa; % limits of agreement (LOA)
+loaD = stats.difference.loa; % limits of agreement (LOA)
 display(loaD) % [BA1999]: [-54.7, 22.1] mmHg
 
 % exclude subjects 78 and 80 [BA1999, p. 139]
@@ -75,10 +75,10 @@ display(loaD) % [BA1999]: [-54.7, 22.1] mmHg
 fprintf '\nExcluding subjects 78 and 80 (outliers):\n'
 iEx = [78,80];
 lEx = (n==78) | (n==80); % alternative: logical indices
-s = ba(J1,S1, 'Exclude',iEx);
+stats = ba(J1,S1, 'Exclude',iEx);
 
 % show results, compare with comments
-muD = s.difference.mu;
+muD = stats.difference.mu;
 display(muD) % [BA1999]: -14.9 mmHg
 % Erratum: a small error, probably a typo, exist in the article [BA1999].
 % Note the difference between the muD and the article's mean difference.
@@ -86,7 +86,7 @@ display(muD) % [BA1999]: -14.9 mmHg
 % mean difference equals the mean of the limits of agreement, thus the
 % calculation here appears to be correct.
 
-loaD = s.difference.loa;
+loaD = stats.difference.loa;
 display(loaD) % [BA1999]: [-43.6, 15.0] mmHg
 
 %% 2.1 Graphical presentation of agreement [BA1999 p. 140]
@@ -100,10 +100,10 @@ f1_2 = figures(2);
 
 % Perform Bland-Altman Analysis and create both the correlation and
 % mean-difference graphs.
-s = ba(f1_2, J1,S1, 'XName',JName, 'YName',SName, 'PlotDefault',true);
+stats = ba(f1_2, J1,S1, 'XName',JName, 'YName',SName, 'PlotDefault',true);
 
 % show results, compare with comments
-rSMuD = s.difference.rSMu;
+rSMuD = stats.difference.rSMu;
 % [BA1999]: 0.07 (p. 140), here -0.03, so an error exists either here or in
 % the article. Either way, the correlation is not significantly different
 % from zero: see s.difference.pRSMu for the p-value.
@@ -128,15 +128,15 @@ disp 'Section 2.2 Precision of the estimated limits of agreement'
 
 clf % Clear figure 3 and recreate it with additional confidence intervals
 % (not shown in article).
-s = ba(f3, J1,S1, 'XName',JName, 'YName',SName, ...
+stats = ba(f3, J1,S1, 'XName',JName, 'YName',SName, ...
     'PlotMeanDifference',true, 'PlotStatistics','extended');
 
 % show results, compare with comments
-muDCI = s.difference.muCI;
+muDCI = stats.difference.muCI;
 % muDCI [BA1999, p. 142]: [-20.5 -12.1]
 display(muDCI)
 
-loaDCI = s.difference.loaCI; % confidence interval of the loa
+loaDCI = stats.difference.loaCI; % confidence interval of the loa
 % loaCI [BA1999, p. 142]:
 % [-61.9, 14.9
 %  -47.5, 29.3] mmHg
@@ -196,19 +196,19 @@ ax(2) = subplot(2,1,2);
 % perform BAA using log transformation
 ba(ax(1), Hurley,Nadler, 'XName',HName, 'YName',NName, ...
     'PlotCorrelation',true, 'Transform',@log)
-s = ba(ax(2), Nadler,Hurley, 'XName',NName, 'YName',HName, ...
+stats = ba(ax(2), Nadler,Hurley, 'XName',NName, 'YName',HName, ...
     'PlotMeanDifference',true, ...
     'PlotStatistics','basic', ...
     'Transform',@log);
 
 % show results, compare with comments
-logMuD = s.difference.mu;
+logMuD = stats.difference.mu;
 display(logMuD) % [BA1999]: 0.099
 
-logLoaD = s.difference.loa;
+logLoaD = stats.difference.loa;
 display(logLoaD) % [BA1999]: [0.056, 0.141]
 
-logLoaDCI = s.difference.loaCI;
+logLoaDCI = stats.difference.loaCI;
 lowerLogLoaDCI = logLoaDCI(:,1); % lower LOA CI
 display(lowerLogLoaDCI) % [BA1999] [0.049; 0.064]
 
@@ -266,14 +266,14 @@ f8 = figure;
 % This is specified using the 'ConstantResidualVariance',true Name-Value
 % pair argument. The result of this assumption is the 95% LOA being
 % parallel to the bias regression line.
-s = ba(f8, Trig,Gerber, 'XName',TName, 'YName',GName, ...
+stats = ba(f8, Trig,Gerber, 'XName',TName, 'YName',GName, ...
     'PlotMeanDifference',true, ...
     'PlotStatistics','regression', 'ConstantResidualVariance',true);
 
 % show results, compare with comments
 % standard deviation of residual of simple linear regression polynomial of
 % difference on mean:
-sPolyResidualD = s.difference.sPolyResidual;
+sPolyResidualD = stats.difference.sPolyResidual;
 display(sPolyResidualD) % [BA1999]: 0.08033 (s_d on p. 148)
 % Erratum: [BA1999] shows a slightly different value. This is less than
 % 1.2% error, but the difference is there.
@@ -300,33 +300,33 @@ disp 'Section 5.1 Equal numbers of replicates'
 % syntax is identical to the regular BAA, but because of the matrix input
 % (check size(J) and size(S)) ba(J,S) performs BAA for repeated
 % measurements.
-s = ba(J,S);
+stats = ba(J,S);
 
 % show results, compare with comments
-varWithinJ = s.x.varWithin; % within-subject variance of measurements J
+varWithinJ = stats.x.varWithin; % within-subject variance of measurements J
 display(varWithinJ) % [BA1999, p. 151]: 37.408
 
-varWithinS = s.y.varWithin; % within-subject variance of measurements S
+varWithinS = stats.y.varWithin; % within-subject variance of measurements S
 display(varWithinS) % [BA1999, p. 151]: 83.141
 
-muD = s.difference.mu; % mean difference between J and S (bias)
+muD = stats.difference.mu; % mean difference between J and S (bias)
 display(muD) % [BA1999, p. 151]: -15.62 mmHg
 
-sD = s.difference.s; % standard deviation of the difference
+sD = stats.difference.s; % standard deviation of the difference
 display(sD) % [BA1999, p. 152]: 20.95 mmHg
 
-loaD = s.difference.loa; % limits of agreement
+loaD = stats.difference.loa; % limits of agreement
 display(loaD) % [BA1999, p. 152]: [-56.68, 25.44] mmHg
 % Notice how the values of muD, sD and loa are very similar to those of
 % [BA1999] section 2, which is to be expected (they do not change for
 % repeated measurements).
 
 % show more results, compare with comments
-muDCI = s.difference.muCI;
+muDCI = stats.difference.muCI;
 display(muDCI) % [BA1999]:
 % value not presented, but notice similarity to muDCI in section 2.
 
-loaDCI = s.difference.loaCI;
+loaDCI = stats.difference.loaCI;
 display(loaDCI) % [BA1999, p. 153]:
 % [-63.5, 18.70
 %  -49.9, 32.2] mmHg
@@ -372,39 +372,39 @@ ax(2) = subplot(2,1,2);
 % Graph subject mean against within-subject standard deviation for each
 % method separately.
 ba(ax, cellRV,cellIC, 'XName',RVName, 'YName',ICName, ...
-    'PlotMeanSD',true, 'PlotStatistics','basic')
+    'PlotMeanSD','separate', 'PlotStatistics','basic')
 
 % Figure 10 in [BA1999, p. 156] corresponds to the following figure.
 f10 = figure;
 
 % Perform Bland-Altman Analysis for repeated measurements with unequal
 % replicates.
-s = ba(f10, cellRV,cellIC, 'XName',RVName, 'YName',ICName, ...
+stats = ba(f10, cellRV,cellIC, 'XName',RVName, 'YName',ICName, ...
     'PlotMeanDifference',true);
 
 % show results, compare with comments
-varWithinRV = s.x.varWithin; % within-subject variance component from RV
+varWithinRV = stats.x.varWithin; % within-subject variance component from RV
 display(varWithinRV) % [BA1999]: 0.1072
 
-varWithinIC = s.y.varWithin; % within-subject variance component from IC
+varWithinIC = stats.y.varWithin; % within-subject variance component from IC
 display(varWithinIC) % [BA1999]: 0.1379
 
 % standard deviation of differences between single observations
-sD = s.difference.s;
+sD = stats.difference.s;
 display(sD) % [BA1999]: 1.0517
 
-muD = s.difference.mu; % mean difference, i.e. bias
+muD = stats.difference.mu; % mean difference, i.e. bias
 display(muD) % [BA1999]: 0.7092
 
-loa = s.difference.loa; % limits of agreement
+loa = stats.difference.loa; % limits of agreement
 display(loa) % [BA1999]: loa = [-1.3521, 2.7705]
 
 % show more results
-muDCI = s.difference.muCI;
+muDCI = stats.difference.muCI;
 display(muDCI) % [BA1999]:
 % value not presented, but given here for completeness
 
-loaDCI = s.difference.loaCI;
+loaDCI = stats.difference.loaCI;
 display(loaDCI) % [BA1999]:
 % value not presented, but given here for completeness
 
@@ -415,18 +415,31 @@ disp(['See also figures [' num2str(fn) '].'])
 
 %% 5.3 Replicated data in pairs [BA1999, p. 156]
 disp 'Section 5.3 Replicated data in pairs'
+% Note 1/2:
 % This section is implemented in ba.m based on the [BA2007], because the
 % section in [BA1999] contains an error. [BA2007] article corrects this
 % error and provides a calculation example with the same data as [BA1999].
 % The numbers calculated below are the numbers from [BA2007, §3, p. 575
 % onwards].
 
-% [BA2007] Figure 3 corresponds to the following figure.
-f11 = figure;
+% Note 2/2:
+% In [BA2007] Figure 3 the vertical axis depicts the difference (and this
+% is plotted as well, hence the figure looks a lot like [BA1999] Figure
+% 10). However, the caption mentions the standard deviatino is plotted!
+% This is incorrect. To plot the difference standard deviation versus the
+% mean specify the 'PlotMeanSD','difference' Name-Value pair.
 
-s = ba(f11, ...
-    cellRV,cellIC, ...
-    'XName',RVName, 'YName',ICName, ...
-    'PlotMeanSD',true, 'ConstantTrueValue',false);
+% perform BAA
+stats = ba( cellRV,cellIC, 'XName',RVName, 'YName',ICName, ...
+    'ConstantTrueValue',false);
 
 % show results, compare with comments
+sD = stats.difference.s;
+display(sD) % [BA2007]: 0.99062408
+% (to see this many digits in MATLAB, use format long)
+
+muD = stats.difference.mu;
+display(muD) % [BA2007]: 0.6021667
+
+loaD = stats.difference.loa;
+display(loaD) % [BA2007]: [-1.3394565, 2.5437899]
