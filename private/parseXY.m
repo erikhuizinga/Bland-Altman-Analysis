@@ -1,36 +1,85 @@
-function [x,y,doRepeated] = parseXY(x,y)
+function [xok,yok,doRepeated] = parseXY(x,y)
 
-[x,repX] = parseV(x);
-[y,repY] = parseV(y);
+% check validity of x and y for calculations
+if iscell(x) && iscell(y)
+    lok = cellfun( ...
+        @(x,y) isfinite(x) & isnumeric(x) & isfinite(y) & isnumeric(y), ...
+        x,y, 'UniformOutput',false);
+else
+    lok = isfinite(x) & isnumeric(x) & isfinite(y) & isnumeric(y);
+end
+
+[xok,repX] = parseV(x,lok);
+[yok,repY] = parseV(y,lok);
 
 doRepeated = repX|repY;
 
 % check number of elements
-if isvector(x) && isvector(y)
+if isvector(xok) && isvector(yok)
     % x and y are numeric or cells
-    if numel(x)~=numel(y)
-        error 'Number of elements in x and y must be equal.'
-    end
+    assert(numel(xok)==numel(yok), ...
+        'Number of elements in x and y must be equal.')
 else % x and/or y matrices
-    assert(size(x,1)==size(y,1),['x and y must have the same number of ' ...
-        'rows (subjects) for repeated measures.'])
+    % validate number of rows (subjects)
+    assert(size(xok,1)==size(yok,1),['x and y must have the same ' ...
+        'number of rows (subjects) for repeated measures.'])
+    % check number of columns (replicates)
+    assert(size(xok,2)==size(yok,2),['x and y must have the same ' ...
+        'number of columns (replicates) per subject.'])
 end
 end
 
-function [v,doRepeated] = parseV(v)
+function [vok,doRepeated] = parseV(v,lok)
 if iscell(v)
+    doRepeated = true;
+    
     assert(all(cellfun(@isvector,v)),['For cell input, every cell of ' ...
         inputname(1) ' must contain a vector.'])
-    v = cellfun(@(v) v(:),v,'UniformOutput',false); % force column vectors
-    nV = cellfun(@numel,v);
-    if isscalar(unique(nV)), v = [v{:}]; end % convert to matrix
-    doRepeated = true;
-elseif isvector(v) % and not a cell
-    v = v(:); % force column vectors
-    doRepeated = false;
-else % v is a numeric matrix
-    doRepeated = true;
-    % it is assumed the user provides repeated observations, every row a
-    % subject and every column an observation
+    
+    % reshape
+    vok = cellfun(@(v) v(:).',v,'UniformOutput',false); % force row vectors
+    vok = vok(:); % force column cell
+    % now v is a column vector cell, every element a subject and every
+    % cell's contents a row vector of replicates
+    
+    % keep valid indices
+    % apparently doesn't ‘reshape’: % reshape(lok,size(vok)); % match shapes
+    if ~isequal(size(lok),size(vok)), lok = lok.'; end % match shapes
+    vok = cellfun(@(vok,lok) vok(lok), vok,lok, 'UniformOutput',false);
+    
+    nV = cellfun(@numel,vok);
+    if isscalar(unique(nV))
+        % all cells contain the same number of replicates, thus they fit in
+        % a matrix
+        vok = vertcat(vok{:}); % convert to matrix
+        % now v is a numeric matrix with rows corresponding to subjects and
+        % columns corresponding to replicates
+        if isvector(vok)
+            % a single measurement per cell element, thus no replicates,
+            % reparse
+            [vok,doRepeated] = parseV(vok,true(size(vok)));
+        end
+    end
+else
+    if isvector(v)
+        vok = v(lok);
+        vok = vok(:); % force column vectors
+        doRepeated = false;
+    else % v is a numeric matrix
+        if isscalar(unique(sum(lok,2)))
+            vok = v(lok);
+            nCol = size(lok,2);
+            vok = reshape(vok,[],nCol);
+            % it is assumed the user provides repeated observations, every row
+            % a subject and every column an observation
+        else
+            % x and y need to be reshaped into cells, every row a subject
+            % and every cell a vector of replicates
+            for r = flip(find(any(lok,2))).'
+                vok{r,1} = v(r,lok(r,:)); %#ok<AGROW>
+            end
+        end
+        doRepeated = true;
+    end
 end
 end
