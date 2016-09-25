@@ -23,12 +23,6 @@
 %   You should have received a copy of the GNU General Public License
 %   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-%% fresh environment
-%TODO deze sectie verwijderen
-clc
-clear
-close all
-
 %% Display demo text
 disp 'Demonstration of Bland-Altman-Analysis'
 
@@ -282,14 +276,6 @@ display(sPolyResidualD) % [BA1999]: 0.08033 (s_d on p. 148)
 f = [f7;f8];
 fn = [f.Number];
 disp(['See also figures [' num2str(fn) '].'])
-
-%% 4 The importance of repeatability [BA1999, p. 148]
-%TODO
-% disp 'Section 4 The importance of repeatability'
-
-%% 4.1 Estimating repeatability [BA1999, p. 149]
-%TODO
-% disp 'Section 4.1 Estimating repeatability'
 
 %% 5 Measuring agreement using repeated measurements [BA1999, p. 150]
 disp 'Section 5 Measuring agreement using repeated measurements'

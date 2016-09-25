@@ -33,7 +33,7 @@ t = Tinv(p,n-1); % inverse t-distribution at p
     statMuS(x,y,'difference',n,z,t,doConstantRegression,assumeCTV);
 
 % mean-difference correlation statistics
-[rSMuD,pRSMuD] = corr(muXY,d,'type','Spearman'); %TODO make independent of stats toolbox?
+[rSMuD,pRSMuD] = corr(muXY,d,'type','Spearman');
 
 % ratio statistics
 if doPlotMR % only calculated when mean-ratio graph is requested
@@ -42,7 +42,7 @@ if doPlotMR % only calculated when mean-ratio graph is requested
         statMuS(x,y,'ratio',n,z,t,doConstantRegression,assumeCTV);
     
     % mean-ratio correlation statistics
-    [rSMuR,pRSMuR] = corr(muXY,R,'type','Spearman'); %TODO make independent of stats toolbox?
+    [rSMuR,pRSMuR] = corr(muXY,R,'type','Spearman');
 end
 
 % standard deviation statistics 1
@@ -66,7 +66,7 @@ if doPlotMSD1 % only calculated when mean-standard deviation graph is requested
         statMuS(xMSD1,yMSD1,'SD',z,doConstantRegression,MSDType);
     
     % mean-standard deviation correlation statistics
-    [rMSD1,pRMSD1] = corr(muMSD1,sMSD1,'type','Spearman'); %TODO make independent of stats toolbox?
+    [rMSD1,pRMSD1] = corr(muMSD1,sMSD1,'type','Spearman');
 end
 
 % standard deviation statistics 2
@@ -78,10 +78,10 @@ if doPlotMSD2 % only calculated when mean-standard deviation graph is requested
         statMuS(xMSD2,yMSD2,'SD',z,doConstantRegression,MSDType);
     
     % mean-standard deviation correlation statistics
-    [rMSD2,pRMSD2] = corr(muMSD2,sMSD2,'type','Spearman'); %TODO make independent of stats toolbox?
+    [rMSD2,pRMSD2] = corr(muMSD2,sMSD2,'type','Spearman');
 end
 
-% correlation statistics and linear regression %TODO linreg for muXY and d
+% correlation statistics and linear regression
 if doPlotC
     [pRhoXY,rhoXY,polyXY,msePXY] = statC(X,Y,z,doConstantRegression);
 end
