@@ -1,13 +1,16 @@
-function [doPlotMD,axMD,doPlotMR,axMR,doPlotMSD,axMSD,doPlotC,axC] = ...
+function [doPlotMD,axMD, doPlotMR,axMR, ...
+    MSDType, doPlotMSD1,axMSD1, doPlotMSD2,axMSD2, doPlotC,axC] = ...
     validatePlotArgs( ...
     PlotDefault, ...
     PlotMeanDifference, PlotMeanRatio, PlotMeanSD, PlotCorrelation, ...
     h ...
     )
+
 % default axes variables
 axMD = [];
 axMR = [];
-axMSD = [];
+axMSD1 = [];
+axMSD2 = [];
 axC = [];
 
 % doAllPlots
@@ -20,13 +23,34 @@ else
     doPlotC = logical(PlotCorrelation);
 end
 
+% validate and parse mean-standard deviation graphs
+diffstr = {'difference','single','joint'};
+ratiostr = {'ratio'};
+separatestr = {'separate','both','input'};
+nonestr = {'none'};
 doPlotMR = logical(PlotMeanRatio);
-doPlotMSD = logical(PlotMeanSD);
+MSDType = parseMeanSD(PlotMeanSD);
+
+switch MSDType
+    case diffstr
+        doPlotMSD1 = true;
+        doPlotMSD2 = false;
+        MSDType = 'difference';
+    case ratiostr
+        doPlotMSD1 = true;
+        doPlotMSD2 = false;
+        MSDType = 'ratio';
+    case separatestr
+        doPlotMSD1 = true;
+        doPlotMSD2 = true;
+        MSDType = 'separate';
+    otherwise
+        doPlotMSD1 = false;
+        doPlotMSD2 = false;
+end
 
 % validate number and type of handles in h for the requested plots
-doPlot = [doPlotMD doPlotMR ...
-    doPlotMSD doPlotMSD ... % counts twice, because it creates 2 plots
-    doPlotC];
+doPlot = [doPlotMD, doPlotMR, doPlotMSD1, doPlotMSD2, doPlotC];
 if any(doPlot)
     nPlot = nnz(doPlot);
     if isempty(h)
@@ -76,7 +100,24 @@ if any(doPlot)
     % store axes in plot order
     if doPlotMD, axMD = ax(1); ax(1) = []; end
     if doPlotMR, axMR = ax(1); ax(1) = []; end
-    if doPlotMSD, axMSD = ax(1:2); axMSD = axMSD(:); ax(1:2) = []; end
+    if doPlotMSD1, axMSD1 = ax(1); ax(1) = []; end
+    if doPlotMSD2, axMSD2 = ax(1); ax(1) = []; end
     if doPlotC, axC = ax(1); end % ax(1) = []; end
 end
+
+% parsing function for PlotMeanSD value
+    function str = parseMeanSD(in)
+        if islogical(in)
+            if in
+                str = 'difference';
+            else
+                str = 'none';
+            end
+        else % must be a string
+            % validate
+            str = validatestring(lower(in), ...
+                [diffstr, ratiostr, separatestr, nonestr] ...
+                );
+        end
+    end
 end

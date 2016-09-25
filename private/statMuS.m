@@ -1,6 +1,5 @@
 function varargout = statMuS(varargin)
-% mean-S statistics
-% S refers to either difference or ratio
+% mean-S statistics, S refers to either difference or ratio
 
 %% determine statistic
 SType = varargin{3};
@@ -16,7 +15,8 @@ switch SType
         [x,y] = varargin{1:2};
         z = varargin{4};
         doConstantRegression = varargin{5};
-        varargout = statMuSD(x,y,z,doConstantRegression);
+        MSDType = varargin{6};
+        varargout = statMuSD(x,y,z,doConstantRegression,MSDType);
         return
 end
 % SFun is the statistic function
@@ -207,7 +207,7 @@ else
         %     2*varSWithin^2 * ( tau^2 * ( N^2*(m'*m) + (m'*m)^2 - 2*N*sum(m.^3) )/( N^2 - m'*m )^2 ...
         %     + 2*tau*N /( N^2 - m'*m ) + N^2*(N-1)*(n-1) /(( N^2 - m'*m )^2 * ( N-n )));
         % % Note: the same result as varVarSBetweenSearle2006 (logically)
-        % 
+        %
         % % Sahai 2005 p. 125 mentions another alternative:
         % % Rao 1997 p. 20 eq. 2.39
         % V = varSBetween + varSWithin./m;
@@ -298,32 +298,39 @@ varargout = { ...
     };
 end
 
-function out = statMuSD(x,y,z,doConstantRegression)
+function out = statMuSD(x,y,z,doConstantRegression,MSDType)
+switch MSDType
+    case 'difference'
+        SFun = @minus;
+    case 'ratio'
+        SFun = @rdivide;
+    case 'separate'
+        SFun = @(x,y) x;
+end
+
 if iscell(x)
     % mean
     muX = cellfun(@mean,x);
     muY = cellfun(@mean,y);
-    % std
-    sX = cellfun(@std,x);
-    sY = cellfun(@std,y);
+    % statistic
+    S = cellfun(SFun,x,y,'UniformOutput',false);
+    % std of the statistic
+    s = cellfun(@std,S);
 else
     % mean
     muX = mean(x,2);
     muY = mean(y,2);
-    % std
-    sX = std(x,[],2);
-    sY = std(y,[],2);
+    % statistic
+    S = SFun(x,y);
+    % std of the statistic
+    s = std(S,[],2);
 end
 
-% regression of std on mean
-[polyMSDX,msePolyMSDX,sResPolyMSDX,polyLLoaMSDX,polyULoaMSDX] = ...
-    baLinReg(muX,sX,z,doConstantRegression);
-[polyMSDY,msePolyMSDY,sResPolyMSDY,polyLLoaMSDY,polyULoaMSDY] = ...
-    baLinReg(muY,sY,z,doConstantRegression);
+mu = SFun(muX,muY);
+
+[polyMSD,msePolyMSD,~,polyLLoaMSD,polyULoaMSD] = ...
+    baLinReg(mu,s,z,doConstantRegression);
 
 % output
-out = {muX,muY,sX,sY, ...
-    polyMSDX,msePolyMSDX,sResPolyMSDX,polyLLoaMSDX,polyULoaMSDX, ...
-    polyMSDY,msePolyMSDY,sResPolyMSDY,polyLLoaMSDY,polyULoaMSDY ...
-    };
+out = {mu,s,polyMSD,msePolyMSD,polyLLoaMSD,polyULoaMSD};
 end
