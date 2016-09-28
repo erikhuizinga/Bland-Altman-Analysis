@@ -1,7 +1,7 @@
 %BADEMO Demonstration of Bland-Altman-Analysis, a MATLAB implementation by
 %   Erik Huizinga based on the methods by Bland and Altman 1983, 1986, 1999
 %   and 2007. The references below are used throughout this demo script.
-
+%
 %% References
 % [BA1999] Bland, J.M., and Altman, D.G. 1999. Measuring agreement in method comparison studies. Statistical Methods in Medical Research 8: 135-160. doi:10.1191/096228099673819272.
 % [BA2007] Bland, J.M., and Altman, D.G. 2007. Agreement Between Methods of Measurement with Multiple Observations Per Individual. Journal of Biopharmaceutical Statistics 17: 571-582. doi:10.1080/10543400701329422.
