@@ -235,7 +235,7 @@ end
 
 % axes labels
 if n==N
-    strSubObs = sprintf('\\itn = \\Sigmam\\bf = %u subjects and observation pairs',n);
+    strSubObs = sprintf('\\itn\\bf = %u subjects and observation pairs',n);
 elseif doMSD
     strSubObs = sprintf('\\itn\\bf = %u subjects, \\it\\Sigmam\\bf = %u observations',n,N);
 else
