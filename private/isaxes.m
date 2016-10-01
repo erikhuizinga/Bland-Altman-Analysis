@@ -1,3 +1,3 @@
 function tf = isaxes(ax)
-tf = strcmp({ax.Type},'axes');
+tf = isgraphics(ax,'axes');
 end
