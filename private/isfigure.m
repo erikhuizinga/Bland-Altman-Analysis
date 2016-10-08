@@ -1,3 +1,3 @@
 function tf = isfigure(f)
-tf = isfigure(f,'figure');
+tf = isgraphics(f,'figure');
 end
