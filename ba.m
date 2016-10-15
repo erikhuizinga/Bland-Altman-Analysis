@@ -7,7 +7,7 @@ function varargout = ba(varargin)
 %   biostatistics and chemistry.
 %
 %   Syntax
-%   stats = BA(x,y) performs Bland-Altman Analysis (BAA) on x and y, which
+%   stats = BA(x, y) performs Bland-Altman Analysis (BAA) on x and y, which
 %   are data from two measurement methods for the same quantity
 %   respectively. x and y can be of various classes and shapes:
 %    - If x and y are vectors, regular BAA is performed. Every element in x
@@ -25,13 +25,13 @@ function varargout = ba(varargin)
 %   the agreement of x and y. For more details on the fields in stats see
 %   section Output below.
 %
-%   stats = BA(x,y,alpha) specifies the significance level to calculate the
-%   limits of agreement and confidence intervals with. alpha must be a
-%   scalar in the interval [0,1]. If alpha is not specified a value of 0.05
-%   is used by default to calculate 95% limits of agreement and confidence
-%   intervals.
+%   stats = BA(x, y, alpha) specifies the significance level to calculate
+%   the limits of agreement and confidence intervals with. alpha must be a
+%   scalar in the interval [0, 1]. If alpha is not specified a value of
+%   0.05 is used by default to calculate 95% limits of agreement and
+%   confidence intervals.
 %
-%   stats = BA(__,Name,Value) specifies additional options using one or
+%   stats = BA(__, Name, Value) specifies additional options using one or
 %   more Name-Value pair arguments, in addition to any of the input
 %   arguments in the previous syntaxes. For example, you can specify to
 %   create the mean-difference plot using the 'PlotMeanDifference'
@@ -40,13 +40,13 @@ function varargout = ba(varargin)
 %   BA(__) can be used to create graphs without returning an output
 %   argument.
 %
-%   __ = BA(f,__) specifies the figure(s) f in which to create the graphs
+%   __ = BA(f, __) specifies the figure(s) f in which to create the graphs
 %   specified with the corresponding Name-Value pairs. The number of
 %   figures in f must equal one or the number of specified plots. If f is
 %   the handle to only one figure, a number of subplots is created in the
 %   figure equal to the number of graphs requested.
 %
-%   __ = BA(ax,__) specifies the (array of) axes in which to create the
+%   __ = BA(ax, __) specifies the (array of) axes in which to create the
 %   requested graphs with the corresponding Name-Value pairs. The number of
 %   axes in ax must equal the number of graphs requested.
 %
@@ -60,29 +60,29 @@ function varargout = ba(varargin)
 %   access various options. Name is the argument name and Value is the
 %   corresponding value. Name must appear inside single quotes (' '). You
 %   can specify several name and value pair arguments in any order as
-%   Name1,Value1,...,NameN,ValueN.
-%   Example: 'XName','X','YName','Y'
+%   Name1, Value1, ..., NameN, ValueN.
+%   Example: 'XName', 'X', 'YName', 'Y'
 %
 %   'XName': Name of x variable
-%   inputname of input argument x (default) | string
+%   inputname() of input argument x (default) | string
 %   Name of x variable, specified as a string. 'XName' is used in the plot
 %   titles.
-%   Example: 'XName','X' sets the first measurement's name to 'X'.
+%   Example: 'XName', 'X' sets the first measurement's name to 'X'.
 %
 %   'YName': Name of y variable
-%   inputname of input argument y (default) | string
+%   inputname() of input argument y (default) | string
 %   Name of y variable, specified as a string. 'YName' is used in the plot
 %   titles.
-%   Example: 'YName','Y' sets the second measurement's name to 'Y'.
+%   Example: 'YName', 'Y' sets the second measurement's name to 'Y'.
 %
 %   'Exclude': Subjects to exclude
 %   [] (default) | logical indices | numeric indices
 %   Subjects to exclude, specified as logical or numeric indices into x and
 %   y. The specified rows are removed from x and y before any calculations
 %   are done or graphs are created.
-%   Example: 'Exclude',[1, 3, 4] excludes rows 1, 3 and 4 from x and y.
-%   Example: 'Exclude',[0 0 1 0 1 1 0 0 1] excludes the true rows from
-%   x and y. Note the logical vector needn't be a column vector.
+%   Example: 'Exclude', [1, 3, 4] excludes rows 1, 3 and 4 from x and y.
+%   Example: 'Exclude', [0 0 1 0 1 1 0 0 1] excludes the true rows from
+%   x and y. Note the logical vector needs not be a column vector.
 %
 %   'Transform': Function to transform data with
 %   @(x) x (default) | function handle
@@ -90,12 +90,12 @@ function varargout = ba(varargin)
 %   function handle of one variable. By default, no transformation is
 %   performed. The function handle should accept a vector input. Bland and
 %   Altman suggest in their 1999 article (see p. 144) only the logarithmic
-%   transformation should be used, i.e. specify 'Transform',@log. Other
+%   transformation should be used, i.e. specify 'Transform', @log. Other
 %   transforms are not easily relatable to the actual measurements, hence
 %   their recommendation. Note that no backtransformation is performed on
 %   the statistics in the optional output argument, i.e. they are the
 %   transformed statistics.
-%   Example: 'Transform',@log transforms x to log(x) and y to log(y).
+%   Example: 'Transform', @log transforms x to log(x) and y to log(y).
 %
 %   'PlotMeanDifference': Create mean-difference graph
 %   false (default) | true
@@ -173,11 +173,12 @@ function varargout = ba(varargin)
 %   'ConstantResidualVariance': Assume constant residual variance
 %   false (default) | true
 %   Assume constant residual variance in the simple linear regression
-%   performed if the 'PlotStatistics','regression' Name-Value pair argument
-%   is specified. This means the upper and lower limits of agreement lines
-%   will have the same slope as the bias line. This assumption holds if the
-%   slope of the upper and lower limits of agreement do not differ
-%   significantly from the slope of the bias regression line.
+%   performed if the 'PlotStatistics', 'regression' Name-Value pair
+%   argument is specified. This means the upper and lower limits of
+%   agreement lines will have the same slope as the bias line. This
+%   assumption holds if the slope of the upper and lower limits of
+%   agreement do not differ significantly from the slope of the bias
+%   regression line.
 %
 %   'ConstantTrueValue': Assume the true value is constant
 %   true (default) | false
@@ -185,16 +186,16 @@ function varargout = ba(varargin)
 %   assumption is true for repeated measurements of the same constant
 %   quantity. For example, repeated measurements of a subject's blood
 %   pressure within the same minute could be assumed to be constant. If
-%   this is to be assumed in the calculations, specify the
-%   'ConstantTrueValue',true pair argument. If the repeated measurements
+%   this is to be assumed in the calculations, specify the 
+%   'ConstantTrueValue', true pair argument. If the repeated measurements
 %   are of a quantity that changes from measurement to measurement, this
 %   assumption does not hold. For example, blood pressure measured on
 %   multiple occasions throughout a day is expected to change over time,
 %   hence over repeated measurements as well. If a varying true value is
-%   assumed, specify the 'ConstantTrueValue',false pair argument.
+%   assumed, specify the 'ConstantTrueValue', false pair argument.
 %
 %   Output
-%   The only output argument stats is optional. It is a scalar structure
+%   The only output argument, stats, is optional. It is a scalar structure
 %   containing multiple fields with descriptive statistics about the
 %   agreement of x and y. The number of fields in stats varies depending on
 %   the input arguments. By default stats contains three fields, being
@@ -235,8 +236,8 @@ function varargout = ba(varargin)
 %   lower limit of agreement, the second to the upper limit. The first and
 %   second row correspond to the lower and upper confidence interval bound
 %   respectively.
-%   Ecample: stats.ratio.loaCI(:,2) is the confidence interval of the upper
-%   limit of agreement of the ratios.
+%   Ecample: stats.ratio.loaCI(:, 2) is the confidence interval of the
+%   upper limit of agreement of the ratios.
 %
 %   s: the standard deviation of the statistic.
 %   Example: stats.difference.s is the standard deviation of the
@@ -328,7 +329,7 @@ function varargout = ba(varargin)
 %   doi:10.1080/10543400701329422.
 %
 %   You might not have access to these articles. Access them through your
-%   institution's library or buy them to read them.
+%   institution's library or buy access to read them.
 %
 %   The demonstration script bademo.m is an implementation of the
 %   calculations done by Bland and Altman in their articles. Their articles
@@ -337,6 +338,7 @@ function varargout = ba(varargin)
 %   results and the syntax used to obtain them.
 %
 %   See also BADEMO
+
 
 %   Copyright (C) 2016 Erik Huizinga, huizinga.erik@gmail.com
 %
@@ -353,16 +355,17 @@ function varargout = ba(varargin)
 %   You should have received a copy of the GNU General Public License
 %   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-%% inputs
-% demo if no input arguments
+
+%% Parse inputs
+% Run bademo if no input arguments are given
 if ~nargin, bademo, return, end
 
 in = varargin;
 
-% check if first input is (an array of) handles
+% Check if first input is (an array of) handles
 if all(isgraphics(in{1}))
     h = in{1};
-    in = in(2:end);
+    in = in(2 : end);
     ixname = 2;
     iyname = 3;
 else
@@ -371,94 +374,108 @@ else
     iyname = 2;
 end
 
-% prepare parser
+
+% Prepare parser
 p = inputParser;
-p.addRequired('x',@validateXY)
-p.addRequired('y',@validateXY)
-p.addOptional('a',.05,@isnumeric)
-p.addParameter('Exclude',[],@validatelogical)
-p.addParameter('XName',inputname(ixname),@ischar)
-p.addParameter('YName',inputname(iyname),@ischar)
-p.addParameter('PlotDefault',false,@validatelogical)
-p.addParameter('PlotMeanDifference',false,@validatelogical)
-p.addParameter('PlotMeanRatio',false,@validatelogical)
-p.addParameter('PlotMeanSD',false,@(s) validatelogical(s)|ischar(s))
-p.addParameter('PlotCorrelation',false,@validatelogical)
-p.addParameter('PlotStatistics','none',@ischar)
-p.addParameter('ConstantResidualVariance',false,@validatelogical)
-p.addParameter('ConstantTrueValue',true,@validatelogical)
-p.addParameter('Transform',@(x) x,@(f) isa(f,'function_handle')|ischar(f))
+p.addRequired('x', @validateXY)
+p.addRequired('y', @validateXY)
+p.addOptional('a', .05, @isnumeric)
+p.addParameter('Exclude', [], @validatelogical)
+p.addParameter('XName', inputname(ixname), @ischar)
+p.addParameter('YName', inputname(iyname), @ischar)
+p.addParameter('PlotDefault', false, @validatelogical)
+p.addParameter('PlotMeanDifference', false, @validatelogical)
+p.addParameter('PlotMeanRatio', false, @validatelogical)
+p.addParameter('PlotMeanSD', false, @(s) validatelogical(s)|ischar(s))
+p.addParameter('PlotCorrelation', false, @validatelogical)
+p.addParameter('PlotStatistics', 'none', @ischar)
+p.addParameter('ConstantResidualVariance', false, @validatelogical)
+p.addParameter('ConstantTrueValue', true, @validatelogical)
+p.addParameter('Transform', @(x) x, ...
+               @(f) isa(f,'function_handle') | ischar(f))
 
-% parse inputs
-parse(p,in{:})
-s2v(p.Results); %#ok<*NODEF>
+% Parse inputs
+parse(p, in{:})
+s2v(p.Results);  %#ok<*NODEF>
 
-%% validate and preprocess inputs
-% x and y: measurements of two methods
-% parseXY validates and reshapes x and y for further analysis. It also
-% checks for repeated measurements analysis.
-[xok,yok,doRepeated] = parseXY(x,y);
 
-% alpha: significance level
+%% Validate and preprocess inputs
+% Validate x and y: measurements of two methods
+% Validate and reshape x and y for further analysis, check for repeated
+% measurements
+[xok, yok, doRepeated] = parseXY(x, y);
+
+
+% Validate alpha: significance level
 if ~isscalar(a) && a<0 && a>1
     error 'alpha must be a scalar in the interval [0,1].'
 end
 
-% xName and yName
+
+% Set xName and yName
 if ~iscellstr(XName), XName = cellstr(XName); end
 if ~iscellstr(YName), YName = cellstr(YName); end
-xName = strjoin(XName,', ');
-yName = strjoin(YName,', ');
+xName = strjoin(XName, ', ');
+yName = strjoin(YName, ', ');
 
-% validate plot arguments
-[doPlotMD,axMD, doPlotMR,axMR, ...
-    MSDType, doPlotMSD1,axMSD1, doPlotMSD2,axMSD2, doPlotC,axC] = ...
-    validatePlotArgs( ...
-    PlotDefault, ...
-    PlotMeanDifference, PlotMeanRatio, PlotMeanSD, PlotCorrelation, ...
-    h ...
-    );
 
-% exclude samples
-lex = false(size(xok,1),1);
+% Validate plot arguments
+[doPlotMD, axMD, doPlotMR, axMR, ...
+    MSDType, doPlotMSD1, axMSD1, doPlotMSD2, axMSD2, doPlotC, axC] ...
+    = validatePlotArgs(PlotDefault, PlotMeanDifference, PlotMeanRatio, ...
+                       PlotMeanSD, PlotCorrelation, h);
+
+                   
+% Exclude unwanted samples
+lex = false(size(xok, 1), 1);
 lex(Exclude) = true;
-xok(lex,:) = [];
-yok(lex,:) = [];
+xok(lex, :) = [];
+yok(lex, :) = [];
 
-% statistics set to plot
-[doPlotBasicStats,doPlotExtendedStats, ...
-    doPlotRegStats,doConstantRegression] = ...
-    parseStatArgs(PlotStatistics,ConstantResidualVariance);
 
-% transformation function
+% Set statistics set to plot
+[doPlotBasicStats, doPlotExtendedStats, ...
+    doPlotRegStats, doConstantRegression] ...
+    = parseStatArgs(PlotStatistics, ConstantResidualVariance);
+
+
+% Set transformation function
 transFun = Transform;
 if ischar(transFun), transFun = str2func(transFun); end
-switch lower(char(transFun)) % detect supported transformations
+switch lower(char(transFun))
+    % Detect supported transformations
     case 'log'
-        if any(strcmpi(p.UsingDefaults,'XName'))
-            xName = ['Log ' xName];
+        if any(strcmpi(p.UsingDefaults, 'XName'))
+            xName = ['Log ', xName];
         end
-        if any(strcmpi(p.UsingDefaults,'YName'))
-            yName = ['Log ' yName];
+        if any(strcmpi(p.UsingDefaults, 'YName'))
+            yName = ['Log ', yName];
         end
+        
+        % Transform
         xok = transFun(xok);
         yok = transFun(yok);
-    otherwise % no transformation
+    otherwise
+        % Do not transform
 end
 
+
+% Set constant true value (CTV) assumption
 assumeCTV = logical(ConstantTrueValue);
 
-%% Bland-Altman analysis
-out = baa( ... % baa: Bland-Altman Analysis
-    xok, xName, yok, yName, a, ...
-    doPlotMD, axMD, ...
-    doPlotMR, axMR, ...
-    MSDType, doPlotMSD1,axMSD1, doPlotMSD2,axMSD2, ...
-    doPlotC, axC, ...
-    doPlotBasicStats, doPlotExtendedStats, ...
-    doPlotRegStats, doConstantRegression, ...
-    doRepeated, assumeCTV);
 
-%% output
+%% Perform Bland-Altman analysis
+out = baa( ...  % baa: Bland-Altman Analysis
+           xok, xName, yok, yName, a, ...
+           doPlotMD, axMD, ...
+           doPlotMR, axMR, ...
+           MSDType, doPlotMSD1, axMSD1, doPlotMSD2, axMSD2, ...
+           doPlotC, axC, ...
+           doPlotBasicStats, doPlotExtendedStats, ...
+           doPlotRegStats, doConstantRegression, ...
+           doRepeated, assumeCTV);
+
+
+%% Set output
 if nargout, varargout = out; end
 end

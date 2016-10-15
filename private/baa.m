@@ -7,52 +7,61 @@ function varargout = baa( ...
     doPlotBasicStats, doPlotExtendedStats, ...
     doPlotRegStats, doConstantRegression, ...
     doRepeated, assumeCTV)
-%% preparation
+
+
+%% Prepare
 if doPlotMD || doPlotC || doPlotMR || doPlotMSD1 || doPlotMSD2
-    ax = [axMD;axMR;axMSD1;axMSD2;axC];
-    f = get(ax,'Parent');
+    ax = [axMD; axMR; axMSD1; axMSD2; axC];
+    f = get(ax, 'Parent');
     if iscell(f), f = vertcat(f{:}); end
-    f = unique(f);
-    % f can be the handle to one or more figures
+    f = unique(f);  % f can be the handle to one or more figures
 else
     f = [];
 end
 
-% check and prepare for repeated measurements
-[x,y,n] = prepRep(x,y,doRepeated);
+% Check and prepare for repeated measurements
+[x, y, n] = prepRep(x, y, doRepeated);
 
-%% calculations
-% significance statistics
-p = 1-a/2;
-z = Ninv(p); % inverse normal distribution at p = 1-alpha/2
-t = Tinv(p,n-1); % inverse t-distribution at p
 
-% difference statistics
-[muXY,d,varXWithin,varYWithin,loaDCI,loaD,muD,muDCI,eLoaD,eMuD,sD, ...
-    polyMuXYD,msePolyMuXYD,sResPolyMuXYD,polyLLoaD,polyULoaD,m,X,Y] = ...
-    statMuS(x,y,'difference',n,z,t,doConstantRegression,assumeCTV);
+%% Calculate
+% Calcultate significance statistics
+p = 1 - a/2;
+z = Ninv(p);  % inverse normal distribution at p = 1-alpha/2
+t = Tinv(p, n - 1);  % inverse t-distribution at p for n - 1 d.o.f.
 
-% mean-difference correlation statistics
-[rSMuD,pRSMuD] = corr(muXY,d,'type','Spearman'); %TODO make independent of stats toolbox?
 
-% ratio statistics
-if doPlotMR % only calculated when mean-ratio graph is requested
-    [~,R,~,~,loaRCI,loaR,muR,muRCI,eLoaR,eMuR,sR, ...
-        polyMuXYR,msePolyMuXYR,sResPolyMuXYR,polyLLoaR,polyULoaR] = ...
-        statMuS(x,y,'ratio',n,z,t,doConstantRegression,assumeCTV);
+% Calculate difference statistics
+[muXY, d, varXWithin, varYWithin, loaDCI, loaD, muD, muDCI, ...
+    eLoaD, eMuD, sD, ...
+    polyMuXYD, msePolyMuXYD, sResPolyMuXYD, polyLLoaD, polyULoaD, ...
+    m, X, Y] = ...
+    statMuS(x, y, 'difference', n, z, t, doConstantRegression, assumeCTV);
+
+% Calculate mean-difference correlation statistics
+[rSMuD, pRSMuD] = corr(muXY, d, 'type', 'Spearman');
+
+
+% Calculate ratio statistics
+if doPlotMR  % This is only calculated if mean-ratio graph is requested
+    [~, R, ~, ~, loaRCI, loaR, muR, muRCI, eLoaR, eMuR, sR, ...
+        polyMuXYR, msePolyMuXYR, sResPolyMuXYR, polyLLoaR, polyULoaR] = ...
+        statMuS(x, y, 'ratio', n, z, t, doConstantRegression, assumeCTV);
     
-    % mean-ratio correlation statistics
-    [rSMuR,pRSMuR] = corr(muXY,R,'type','Spearman'); %TODO make independent of stats toolbox?
+    % Calculate mean-ratio correlation statistics
+    [rSMuR, pRSMuR] = corr(muXY, R, 'type', 'Spearman');
 end
 
-% standard deviation statistics 1
-if doPlotMSD1 % only calculated when mean-standard deviation graph is requested
+% Calculate standard deviation statistics 1
+if doPlotMSD1  % This is only calculated is mean-standard deviation graph
+               % is requested
     xMSD1 = x;
-    if strcmp(MSDType,'separate')
+    
+    if strcmp(MSDType, 'separate')
         yMSD1 = x;
     else
         yMSD1 = y;
     end
+    
     XYName = [xName ' and ' yName];
     switch MSDType
         case 'difference'
@@ -62,14 +71,16 @@ if doPlotMSD1 % only calculated when mean-standard deviation graph is requested
         otherwise
             xNameMSD1 = xName;
     end
-    [muMSD1,sMSD1, polyMSD1,msePolyMSD1,polyLLoaMSD1,polyULoaMSD1] = ...
-        statMuS(xMSD1,yMSD1,'SD',z,doConstantRegression,MSDType);
     
-    % mean-standard deviation correlation statistics
-    [rMSD1,pRMSD1] = corr(muMSD1,sMSD1,'type','Spearman'); %TODO make independent of stats toolbox?
+    [muMSD1, sMSD1, ...
+        polyMSD1, msePolyMSD1, polyLLoaMSD1, polyULoaMSD1] = ...
+        statMuS(xMSD1, yMSD1, 'SD', z, doConstantRegression, MSDType);
+    
+    % Calculate mean-standard deviation correlation statistics
+    [rMSD1, pRMSD1] = corr(muMSD1, sMSD1, 'type', 'Spearman');
 end
 
-% standard deviation statistics 2
+% Calculate standard deviation statistics 2
 if doPlotMSD2 % only calculated when mean-standard deviation graph is requested
     xMSD2 = y;
     yMSD2 = y;
