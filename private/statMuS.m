@@ -1,32 +1,34 @@
 function varargout = statMuS(varargin)
-% mean-S statistics, S refers to either difference or ratio
+% Calculate mean-S statistics, where S refers to either difference, ratio
+% or standard deviation (SD)
 
-%% determine statistic
+
+%% Determine statistic
 SType = varargin{3};
 switch SType
     case 'difference'
-        % mean-difference
         SFun = @minus;
+        
     case 'ratio'
-        % mean-ratio
         SFun = @rdivide;
+        
     case 'SD'
-        % mean-standard deviation
-        [x,y] = varargin{1:2};
+        [x, y] = varargin{1 : 2};
         z = varargin{4};
         doConstantRegression = varargin{5};
         MSDType = varargin{6};
-        varargout = statMuSD(x,y,z,doConstantRegression,MSDType);
+        
+        % Call function specific for the mean-SD graph
+        varargout = statMuSD(x, y, z, doConstantRegression, MSDType);
         return
 end
-% SFun is the statistic function
 
-%% input
-% parse inputs
-[x,y,~,n,z,t,doConstantRegression,assumeCTV] = varargin{:};
+
+%% Parse inputs
+[x, y, ~, n, z, t, doConstantRegression, assumeCTV] = varargin{:};
 haveCell = iscell(x);
 
-% vectorise x and y into X and Y and calculate the vectorised statistic
+% Vectorise x and y into X and Y and calculate the vectorised statistic
 if haveCell
     X = [x{:}];
     Y = [y{:}];
@@ -36,50 +38,55 @@ else
     Y = transpose(y);
     Y = Y(:);
 end
-S = SFun(X,Y); % vectorised statistic
+
+% Calculate vectorised statistic
+S = SFun(X, Y);  % SFun is the statistic function
 % X, Y and S now are row vectors of individual observations
 
-% determine number of replicates
+% Determine number of replicates
 if haveCell
-    m = cellfun(@numel,x);
+    m = cellfun(@numel, x);
 else
-    m = size(x,2)*ones(size(x,1),1);
+    m = size(x, 2) * ones(size(x, 1), 1);
 end
 % The number of replicates m is the same for x and y, because parseXY makes
 % sure only pairs of observations are kept. m is an n×1 vector.
 
-%% within subject means
-% subject mean
+
+%% Calculate within subject means
+% Calculate subject mean per method
 if haveCell
-    muXWithin = cellfun(@mean,x);
-    muYWithin = cellfun(@mean,y);
+    muXWithin = cellfun(@mean, x);
+    muYWithin = cellfun(@mean, y);
 else
-    muXWithin = mean(x,2);
-    muYWithin = mean(y,2);
+    muXWithin = mean(x, 2);
+    muYWithin = mean(y, 2);
 end
 
-% subject mean statistic, which is the statistic to plot as well
-muSWithin = SFun(muXWithin,muYWithin); % SFun is the statistic function
+% Calculate subject mean statistic, which is the statistic to plot as well
+muSWithin = SFun(muXWithin, muYWithin);
 
-%% calculate standard deviation of the statistic
-if all(m==1)
-    %% no repeated measurements, i.e. single mearuements
-    % overall mean statistic, i.e. bias
+
+%% Calculate standard deviation of the statistic
+if all(m == 1)  % No repeated measurements, i.e. single mearuements
+    
+    % Calculate overall mean statistic, i.e. bias
     muS = mean(muSWithin);
     
-    % variance of the statistic for single obsevations by the methods
+    % Calculate variance of the statistic for single observations
     varS = var(muSWithin);
-    varMuS = varS; % for single measurements
+    varMuS = varS;
     
-    % standard deviation of statistic for single obsevations by the methods
+    % Calculate standard deviation of statistic for single observation
     sS = sqrt(varS);
     
-    % within-subject variance is zero for single measurements
+    % Set within-subject variance to zero for single observations
     varXWithin = 0;
     varYWithin = 0;
     
-    % correction term factor is zero for single measurements
+    % Set correction term factor to zero for single observations
     corrM = 0;
+    
 else
     %% repeated measurements with equal/unequal numbers of replicates
     % prepare for ANOVA
@@ -126,7 +133,7 @@ else
         % BA1999 eq. 5.13, which reduces to eq. 5.2 for isscalar(unique(m))
         varS = varMuS + corrM*varXWithin + corrM*varYWithin;
         
-        % standard deviation of the statistic for single obsevations by the methods
+        % standard deviation of the statistic for single observations by the methods
         sS = sqrt(varS);
     else
         %% assume variable true value
