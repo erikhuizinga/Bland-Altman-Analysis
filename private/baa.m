@@ -1,12 +1,11 @@
-function varargout = baa( ...
-    x, xName, y, yName, a, ...
-    doPlotMD, axMD, ...
-    doPlotMR, axMR, ...
-    MSDType, doPlotMSD1,axMSD1, doPlotMSD2,axMSD2, ...
-    doPlotC, axC, ...
-    doPlotBasicStats, doPlotExtendedStats, ...
-    doPlotRegStats, doConstantRegression, ...
-    doRepeated, assumeCTV)
+function varargout = baa(x, xName, y, yName, a, ...
+                         doPlotMD, axMD, ...
+                         doPlotMR, axMR, ...
+                         MSDType, doPlotMSD1,axMSD1, doPlotMSD2,axMSD2, ...
+                         doPlotC, axC, ...
+                         doPlotBasicStats, doPlotExtendedStats, ...
+                         doPlotRegStats, doConstantRegression, ...
+                         doRepeated, assumeCTV)
 
 
 %% Prepare
@@ -37,6 +36,7 @@ t = Tinv(p, n - 1);  % inverse t-distribution at p for n - 1 d.o.f.
     m, X, Y] = ...
     statMuS(x, y, 'difference', n, z, t, doConstantRegression, assumeCTV);
 
+
 % Calculate mean-difference correlation statistics
 [rSMuD, pRSMuD] = corr(muXY, d, 'type', 'Spearman');
 
@@ -44,12 +44,13 @@ t = Tinv(p, n - 1);  % inverse t-distribution at p for n - 1 d.o.f.
 % Calculate ratio statistics
 if doPlotMR  % This is only calculated if mean-ratio graph is requested
     [~, R, ~, ~, loaRCI, loaR, muR, muRCI, eLoaR, eMuR, sR, ...
-        polyMuXYR, msePolyMuXYR, sResPolyMuXYR, polyLLoaR, polyULoaR] = ...
-        statMuS(x, y, 'ratio', n, z, t, doConstantRegression, assumeCTV);
+        polyMuXYR, msePolyMuXYR, sResPolyMuXYR, polyLLoaR, polyULoaR] ...
+        = statMuS(x, y, 'ratio', n, z, t, doConstantRegression, assumeCTV);
     
     % Calculate mean-ratio correlation statistics
     [rSMuR, pRSMuR] = corr(muXY, R, 'type', 'Spearman');
 end
+
 
 % Calculate standard deviation statistics 1
 if doPlotMSD1  % This is only calculated is mean-standard deviation graph
@@ -62,92 +63,92 @@ if doPlotMSD1  % This is only calculated is mean-standard deviation graph
         yMSD1 = y;
     end
     
-    XYName = [xName ' and ' yName];
+    XYName = [xName, ' and ', yName];
     switch MSDType
         case 'difference'
-            xNameMSD1 = ['difference between ' XYName];
+            xNameMSD1 = ['difference between ', XYName];
         case 'ratio'
-            xNameMSD1 = ['ratio between ' XYName];
+            xNameMSD1 = ['ratio between ', XYName];
         otherwise
             xNameMSD1 = xName;
     end
     
-    [muMSD1, sMSD1, ...
-        polyMSD1, msePolyMSD1, polyLLoaMSD1, polyULoaMSD1] = ...
-        statMuS(xMSD1, yMSD1, 'SD', z, doConstantRegression, MSDType);
+    [muMSD1, sMSD1, polyMSD1, msePolyMSD1, polyLLoaMSD1, polyULoaMSD1] ...
+        = statMuS(xMSD1, yMSD1, 'SD', z, doConstantRegression, MSDType);
     
     % Calculate mean-standard deviation correlation statistics
     [rMSD1, pRMSD1] = corr(muMSD1, sMSD1, 'type', 'Spearman');
 end
 
+
 % Calculate standard deviation statistics 2
-if doPlotMSD2 % only calculated when mean-standard deviation graph is requested
+if doPlotMSD2  % This is only calculated when mean-standard deviation graph is requested
     xMSD2 = y;
     yMSD2 = y;
     xNameMSD2 = yName;
-    [muMSD2,sMSD2, polyMSD2,msePolyMSD2,polyLLoaMSD2,polyULoaMSD2] = ...
-        statMuS(xMSD2,yMSD2,'SD',z,doConstantRegression,MSDType);
     
-    % mean-standard deviation correlation statistics
-    [rMSD2,pRMSD2] = corr(muMSD2,sMSD2,'type','Spearman'); %TODO make independent of stats toolbox?
+    [muMSD2, sMSD2, polyMSD2, msePolyMSD2, polyLLoaMSD2, polyULoaMSD2] ...
+        = statMuS(xMSD2, yMSD2, 'SD', z, doConstantRegression, MSDType);
+    
+    % Calculate mean-standard deviation correlation statistics
+    [rMSD2, pRMSD2] = corr(muMSD2, sMSD2, 'type', 'Spearman'); %TODO make independent of stats toolbox?
 end
 
-% correlation statistics and linear regression %TODO linreg for muXY and d
+
+% Calculate correlation statistics and linear regression
+%TODO linreg for muXY and d
 if doPlotC
-    [pRhoXY,rhoXY,polyXY,msePXY] = statC(X,Y,z,doConstantRegression);
+    [pRhoXY, rhoXY, polyXY, msePXY] = statC(X, Y, z, doConstantRegression);
 end
 
-%% graphics
-% correlation plot
+
+%% Create graphics
+% Create correlation plot
 if doPlotC
-    plotC(axC,X,Y,doPlotBasicStats,pRhoXY,rhoXY,sum(m),xName,yName)
+    plotC(axC, X, Y, doPlotBasicStats, pRhoXY, rhoXY, sum(m), xName, yName)
 end
 
-% mean-difference plot
+
+% Create mean-difference plot
 if doPlotMD
-    plotM(axMD,muXY,d,'difference','d',0,doPlotBasicStats,loaDCI, ...
-        pRSMuD,rSMuD,loaD,a,z,muD,muDCI,doPlotExtendedStats,eLoaD,eMuD, ...
-        '-',n,xName,yName, ...
-        doPlotRegStats,polyMuXYD,msePolyMuXYD,polyLLoaD,polyULoaD,doConstantRegression, ...
-        m)
+    plotM(axMD, muXY, d, 'difference', 'd', 0, doPlotBasicStats, ...
+          loaDCI, pRSMuD, rSMuD, loaD, a, z, muD, muDCI, ...
+          doPlotExtendedStats, eLoaD, eMuD, '-', n, xName, yName, ...
+          doPlotRegStats, polyMuXYD, msePolyMuXYD, polyLLoaD, ...
+          polyULoaD, doConstantRegression, m)
 end
 
-% mean-ratio plot
+
+% Create mean-ratio plot
 if doPlotMR
-    plotM(axMR,muXY,R,'ratio','R',1,doPlotBasicStats,loaRCI,pRSMuR, ...
-        rSMuR,loaR,a,z,muR,muRCI,doPlotExtendedStats,eLoaR,eMuR, ...
-        '/',n,xName,yName, ...
-        doPlotRegStats,polyMuXYR,msePolyMuXYR,polyLLoaR,polyULoaR,doConstantRegression, ...
-        m)
+    plotM(axMR, muXY, R, 'ratio', 'R', 1, doPlotBasicStats, loaRCI, ...
+          pRSMuR, rSMuR, loaR, a, z, muR, muRCI, doPlotExtendedStats, ...
+          eLoaR,eMuR, '/', n, xName, yName, doPlotRegStats, polyMuXYR, ...
+          msePolyMuXYR, polyLLoaR, polyULoaR, doConstantRegression, m)
 end
 
-% mean-standard deviation plot 1
+
+% Create mean-standard deviation plot 1
 if doPlotMSD1
-    plotM(axMSD1, muMSD1,sMSD1, 'standard deviation','s', ...
-        NaN, doPlotBasicStats, ...
-        [], ...
-        pRMSD1,rMSD1, ...
-        [],[],[],[],[],doPlotExtendedStats,[],[], ...
-        'std',n,xNameMSD1,[], ...
-        doPlotRegStats, ...
-        polyMSD1,msePolyMSD1,polyLLoaMSD1,polyULoaMSD1, ...
-        doConstantRegression,m)
+    plotM(axMSD1, muMSD1, sMSD1, 'standard deviation', 's', NaN, ...
+          doPlotBasicStats, [], pRMSD1,rMSD1, [], [], [], [], [], ...
+          doPlotExtendedStats, [], [], 'std', n, xNameMSD1, [], ...
+          doPlotRegStats, polyMSD1, msePolyMSD1, polyLLoaMSD1, ...
+          polyULoaMSD1, doConstantRegression, m)
 end
 
-% mean-standard deviation plot 2
+
+% Create mean-standard deviation plot 2
 if doPlotMSD2
-    plotM(axMSD2, muMSD2,sMSD2, 'standard deviation','s', ...
-        NaN, doPlotBasicStats, ...
-        [], ...
-        pRMSD2,rMSD2, ...
-        [],[],[],[],[],doPlotExtendedStats,[],[], ...
-        'std',n,xNameMSD2,[], ...
-        doPlotRegStats, ...
-        polyMSD2,msePolyMSD2,polyLLoaMSD2,polyULoaMSD2, ...
-        doConstantRegression,m)
+    plotM(axMSD2, muMSD2, sMSD2, 'standard deviation', 's', NaN, ...
+          doPlotBasicStats, [], pRMSD2, rMSD2, [], [], [], [], [], ...
+          doPlotExtendedStats, [], [], 'std', n, xNameMSD2, [], ...
+          doPlotRegStats, polyMSD2, msePolyMSD2, polyLLoaMSD2, ...
+          polyULoaMSD2, doConstantRegression, m)
 end
 
-%% set data cursor update function for figure(s)
+
+%% Set data cursor update function for figure(s)
 for f = f(:).'
     dc = datacursormode(f);
     dc.UpdateFcn = @dcUpdateFcn;
@@ -155,8 +156,9 @@ for f = f(:).'
     dc.Enable = 'on';
 end
 
-%% output
-% difference outputs
+
+%% Set outputs
+% Set difference outputs
 out.difference.mu = muD;
 out.difference.muCI = muDCI;
 out.difference.loa = loaD;
@@ -168,7 +170,8 @@ out.difference.polyMu = polyMuXYD;
 out.difference.msePolyMu = msePolyMuXYD;
 out.difference.sPolyResidual = sResPolyMuXYD;
 
-% ratio outputs
+
+% Set ratio outputs
 if doPlotMR
     out.ratio.mu = muR;
     out.ratio.muCI = muRCI;
@@ -182,7 +185,8 @@ if doPlotMR
     out.ratio.sPolyResidual = sResPolyMuXYR;
 end
 
-% correlation outputs
+
+% Set correlation outputs
 if doPlotC
     out.correlation.rho = rhoXY;
     out.correlation.p = pRhoXY;
@@ -190,10 +194,12 @@ if doPlotC
     out.correlation.polyMSE = msePXY;
 end
 
-% general outputs
+
+% Set general outputs
 out.x.varWithin = varXWithin;
 out.y.varWithin = varYWithin;
 
-% final output
+
+% Set final output
 varargout = {{out}};
 end
