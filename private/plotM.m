@@ -187,7 +187,7 @@ if doPlotRegStats
     
     % Adjust y limits
     yl = ylim;
-    padding = range(yl) / c20; % Add a distance to enhance visibility
+    padding = range(yl) / 20; % Add a distance to enhance visibility
     yl = [min(yl(1), min(yLLoa) - padding), ...
           max(yl(2), max(yULoa) + padding)];
     ylim(yl)
