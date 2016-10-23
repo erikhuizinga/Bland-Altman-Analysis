@@ -26,7 +26,7 @@ end
 % Calcultate significance statistics
 p = 1 - a/2;
 z = Ninv(p);  % inverse normal distribution at p = 1-alpha/2
-t = Tinv(p, n - 1);  % inverse t-distribution at p for n - 1 d.o.f.
+t = Tinv(p, n - 1);  % inverse t-distribution at p for n-1 d.o.f.
 
 
 % Calculate difference statistics
