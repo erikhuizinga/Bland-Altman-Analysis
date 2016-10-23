@@ -1,29 +1,30 @@
-function [doPlotMD,axMD, doPlotMR,axMR, ...
-    MSDType, doPlotMSD1,axMSD1, doPlotMSD2,axMSD2, doPlotC,axC] = ...
-    validatePlotArgs( ...
-    PlotDefault, ...
-    PlotMeanDifference, PlotMeanRatio, PlotMeanSD, PlotCorrelation, ...
-    h ...
-    )
+function [doPlotMD, axMD, doPlotMR, axMR, MSDType, doPlotMSD1, axMSD1, ...
+          doPlotMSD2,axMSD2, doPlotC,axC] ...
+          = validatePlotArgs(PlotDefault, PlotMeanDifference, ...
+                             PlotMeanRatio, PlotMeanSD, PlotCorrelation, h)
 
-% default axes variables
+                         
+% Set default axes variables
 axMD = [];
 axMR = [];
 axMSD1 = [];
 axMSD2 = [];
 axC = [];
 
-% doAllPlots
+
+% Set doPlotMD and doPlotC
 doPlotDefault = logical(PlotDefault);
 if doPlotDefault
-    doPlotMD = true; % do mean-difference plot
-    doPlotC = true; % do correlation plot
+    doPlotMD = true;  % Do mean-difference plot
+    doPlotC = true;  % Do correlation plot
+    
 else
     doPlotMD = logical(PlotMeanDifference);
     doPlotC = logical(PlotCorrelation);
 end
 
-% validate and parse mean-standard deviation graphs
+
+% Validate and parse mean-standard deviation graphs
 diffstr = {'difference','single','joint'};
 ratiostr = {'ratio'};
 separatestr = {'separate','both','input'};
@@ -49,49 +50,58 @@ switch MSDType
         doPlotMSD2 = false;
 end
 
-% validate number and type of handles in h for the requested plots
+
+% Validate number and type of handles in h for the requested plots
 doPlot = [doPlotMD, doPlotMR, doPlotMSD1, doPlotMSD2, doPlotC];
+
 if any(doPlot)
     nPlot = nnz(doPlot);
     if isempty(h)
         figure
         ax = gobjects(0);
+        
     else
         nh = numel(h);
         if isaxes(h)
-            if nh==nPlot
+            if nh == nPlot
                 ax = h;
+                
             else
                 error(['The number of requested plots (' num2str(nPlot) ...
-                    ') is not equal to the number of axes (' ...
-                    num2str(nh) ') in the first input argument.'])
+                      ') is not equal to the number of axes (', ...
+                      num2str(nh), ') in the first input argument.'])
             end
-        else % h must be a figure or contain nplot figures
-            if nh==1
-                figure(h) % error if h is not a figure
+            
+        else  % h must be a figure or contain nPlot figures
+            if nh == 1
+                figure(h)  % Throw error if h is not a figure
                 ax = gobjects(0);
-            elseif nh==nPlot
+                
+            elseif nh == nPlot
                 for n = nh:-1:1
                     figure(h(n))
                     ax(n) = axes;
                 end
+                
             elseif all(isfigure(h))
                 error(['The number of requested plots (' num2str(nPlot) ...
-                    ') is not equal to the number of figures (' ...
-                    num2str(nh) ') in the first input argument.'])
+                      ') is not equal to the number of figures (', ...
+                      num2str(nh), ') in the first input argument.'])
+                
             else
                 error(['The first optional input argument must be an ' ...
-                    '(array of) axes or figure handle(s).'])
+                      '(array of) axes or figure handle(s).'])
             end
         end
     end
     
-    % create axes if not yet existent
+    % Create axes if not yet existent
     if isempty(ax)
         if nPlot>1
             for n = nPlot:-1:1
-                ax(n) = subplot(nPlot,1,n);
+                ax(n) = subplot(nPlot, 1, n);
             end
+            
         else
             ax = axes;
         end
@@ -105,16 +115,19 @@ if any(doPlot)
     if doPlotC, axC = ax(1); end % ax(1) = []; end
 end
 
-% parsing function for PlotMeanSD value
+
     function str = parseMeanSD(in)
+        % Parse PlotMeanSD
         if islogical(in)
             if in
                 str = 'difference';
+                
             else
                 str = 'none';
             end
-        else % must be a string
-            % validate
+            
+        else  % in must be a string
+            % Validate
             str = validatestring(lower(in), ...
                 [diffstr, ratiostr, separatestr, nonestr] ...
                 );
