@@ -442,6 +442,7 @@ yok(lex, :) = [];
 % Set transformation function
 transFun = Transform;
 if ischar(transFun), transFun = str2func(transFun); end
+
 switch lower(char(transFun))
     % Detect supported transformations
     case 'log'
