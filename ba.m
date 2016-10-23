@@ -360,9 +360,9 @@ function varargout = ba(varargin)
 % Run bademo if no input arguments are given
 if ~nargin, bademo, return, end
 
-in = varargin;
 
 % Check if first input is (an array of) handles
+in = varargin;
 if all(isgraphics(in{1}))
     h = in{1};
     in = in(2 : end);
