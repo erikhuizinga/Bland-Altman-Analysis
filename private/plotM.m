@@ -80,10 +80,11 @@ if doPlotBasicStats
                                           num2str(loaCI(2, 1)),  ']'], ...
                                      @dcXYZ);
         text(xl(2) - padding/2, loa(1) + padding/2, ...
-             sprintf('$\\overline{%s}-%.2fs_%s$', sMYName, z, sMYName), ...
+             sprintf('$\\overline{%s}-%.2fs_%s=%s$', ...
+                     sMYName, z, sMYName, num2str(loa(1))), ...
              'Interpreter', 'latex', 'HorizontalAlignment', 'right')
         
-        % Add upper limit of agreement line
+        % Add upper LOA line
         lineULoa = refline(0, loa(2));
         lineULoa.Color = 'k';
         lineULoa.UserData = dcStruct([], [], ...
@@ -93,15 +94,16 @@ if doPlotBasicStats
                                           num2str(loaCI(2,2)), ']'], ...
                                      @dcXYZ);
         text(xl(2) - padding/2, loa(2) + padding/2, ...
-             sprintf('$\\overline{%s}+%.2fs_%s$', sMYName, z, sMYName), ...
+             sprintf('$\\overline{%s}+%.2fs_%s=%s$', ...
+                     sMYName, z, sMYName, num2str(loa(2))), ...
              'Interpreter', 'latex', 'HorizontalAlignment', 'right')
         
         % Add mean Y line
         muYLine = refline(0, muY);
         muYLine.Color = 'k';
         text(xl(2) - padding/2, muY + padding/2, ...
-             sprintf('$\\overline{%s}$', sMYName), 'Interpreter', ...
-             'latex', 'HorizontalAlignment','right')
+             sprintf('$\\overline{%s}=%s$', sMYName, num2str(muY)), ...
+             'Interpreter', 'latex', 'HorizontalAlignment','right')
         muYLine.UserData = dcStruct([], [], ['mean ', sMYLongName], [], ...
                                     [strP, '% CI = [', ...
                                      num2str(muYCI(1)), ', ', ...
@@ -162,7 +164,7 @@ if doPlotRegStats
     regLineLLoa.Color = 'k';
     if doConReg
         strLoaFun = sprintf('s_{res}');
-        strLoaDC = sprintf('%.2f×s_res', z); %TODO check × (times)
+        strLoaDC = sprintf('%.2f×s_res', z);  %TODO check × (times)
         
     else
         strLoaFun = sprintf('\\sqrt{\\pi/2}f_{res}(\\mu)');
@@ -170,7 +172,7 @@ if doPlotRegStats
             z * sqrt(pi / 2));
     end
     regLineLLoa.UserData = dcStruct( ...
-        sprintf('f_lower(µ) - %.2f×f_res(µ) = %s×µ + %s', ... %TODO check × (times) and µ
+        sprintf('f_lower(µ) - %.2f×f_res(µ) = %s×µ + %s', ...  %TODO check × (times) and µ
         sqrt(pi / 2) * z, ...
         num2str(polyLLoa(1)), num2str(polyLLoa(2))), 'µ', ...  %TODO check µ
         sprintf('lower %s%% LOA', strP), [], [], @dcXYZ);
@@ -180,14 +182,14 @@ if doPlotRegStats
     regLineULoa = line(xlim, yULoa);
     regLineULoa.Color = 'k';
     regLineULoa.UserData = dcStruct( ...
-        sprintf('f_upper(µ) + %s = %s×µ + %s', ... %TODO check × (times) and µ
+        sprintf('f_upper(µ) + %s = %s×µ + %s', ...  %TODO check × (times) and µ
         strLoaDC, num2str(polyULoa(1)), num2str(polyULoa(2))), ...
         'µ', ...  %TODO check µ
         sprintf('upper %s%% LOA', strP), [], [], @dcXYZ);
     
     % Adjust y limits
     yl = ylim;
-    padding = range(yl) / 20; % Add a distance to enhance visibility
+    padding = range(yl) / 20;  % Add a distance to enhance visibility
     yl = [min(yl(1), min(yLLoa) - padding), ...
           max(yl(2), max(yULoa) + padding)];
     ylim(yl)
@@ -226,7 +228,7 @@ if doMSD
                   strSubObs, xName))
     
 else
-    xlabel(sprintf('mean \\itµ = (M_1+M_2)/2')) %TODO check µ
+    xlabel(sprintf('mean \\itµ = (M_1+M_2)/2'))  %TODO check µ
     strYLabel = sprintf('%s \\it%s = M_1%sM_2', sMYLongName, sMYName, ...
                         strYFun);
     ylabel(strYLabel)
