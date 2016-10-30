@@ -128,7 +128,20 @@ end
 
 % Create mean-standard deviation plot 1
 if doPlotMSD1
-    plotM(axMSD1, muMSD1, sMSD1, 'standard deviation', 's', NaN, ...
+    % Determine string of SD
+    switch MSDType
+        case 'difference'
+            SDString1 = 's_D';
+            
+        case 'ratio'
+            SDString1 = 's_R';
+            
+        otherwise
+            SDString1 = 's';
+    end
+    
+    % Create mean-SD plot 1
+    plotM(axMSD1, muMSD1, sMSD1, 'standard deviation', SDString1, NaN, ...
           doPlotBasicStats, [], pRMSD1,rMSD1, [], [], [], [], [], ...
           doPlotExtendedStats, [], [], 'std', n, xNameMSD1, [], ...
           doPlotRegStats, polyMSD1, msePolyMSD1, polyLLoaMSD1, ...
@@ -138,7 +151,20 @@ end
 
 % Create mean-standard deviation plot 2
 if doPlotMSD2
-    plotM(axMSD2, muMSD2, sMSD2, 'standard deviation', 's', NaN, ...
+    % Determine string of SD
+    switch MSDType
+        case 'difference'
+            SDString2 = 's_D';
+            
+        case 'ratio'
+            SDString2 = 's_R';
+            
+        otherwise
+            SDString2 = 's';
+    end
+    
+    % Create mean-SD plot 3
+    plotM(axMSD2, muMSD2, sMSD2, 'standard deviation', SDString2, NaN, ...
           doPlotBasicStats, [], pRMSD2, rMSD2, [], [], [], [], [], ...
           doPlotExtendedStats, [], [], 'std', n, xNameMSD2, [], ...
           doPlotRegStats, polyMSD2, msePolyMSD2, polyLLoaMSD2, ...
