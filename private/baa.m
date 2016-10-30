@@ -183,16 +183,16 @@ end
 
 %% Set outputs
 % Set difference outputs
-out.difference.mu = muD;
-out.difference.muCI = muDCI;
-out.difference.loa = loaD;
-out.difference.loaCI = loaDCI;
-out.difference.s = sD;
-out.difference.rSMu = rSMuD;
-out.difference.pRSMu = pRSMuD;
-out.difference.polyMu = polyMuXYD;
-out.difference.msePolyMu = msePolyMuXYD;
-out.difference.sPolyResidual = sResPolyMuXYD;
+out.difference.mu = muD;  % mean (bias) of the difference (D)
+out.difference.muCI = muDCI;  % confidence interval (CI) of muD
+out.difference.loa = loaD;  % limits of agreement (LOA) of D
+out.difference.loaCI = loaDCI;  % CI of the LOA of D
+out.difference.s = sD;  % standard deviation (SD) of D
+out.difference.rSMu = rSMuD;  % Spearman rank correlation of D and mean (mu)
+out.difference.pRSMu = pRSMuD;  % p-value of rSMuD
+out.difference.polyMu = polyMuXYD;  % simple linear regression of D on mu
+out.difference.msePolyMu = msePolyMuXYD;  % mean squared error (MSE) of polyMuXYD
+out.difference.sPolyResidual = sResPolyMuXYD;  % SD of the residuals
 
 
 % Set ratio outputs
@@ -212,16 +212,25 @@ end
 
 % Set correlation outputs
 if doPlotC
-    out.correlation.rho = rhoXY;
-    out.correlation.p = pRhoXY;
-    out.correlation.poly = polyXY;
-    out.correlation.polyMSE = msePXY;
+    out.correlation.rho = rhoXY;  % Pearson correlation of x with y
+    out.correlation.p = pRhoXY;  % p-value of rhoXY
+    out.correlation.poly = polyXY;  % simple linear regression of Y on X
+    out.correlation.polyMSE = msePXY;  % MSE of the regression
 end
 
 
 % Set general outputs
-out.x.varWithin = varXWithin;
-out.y.varWithin = varYWithin;
+out.x.data = X;  % x-values used in the calculations
+out.y.data = Y;  % y-values used in the calculations
+out.n = n;  % number of subjects
+
+% Set repeated measurements ourputs
+if doRepeated
+    out.x.varWithin = varXWithin;  % within-subject variance for x
+    out.y.varWithin = varYWithin;  % within-subject variance for y
+    out.m = m;  % number of observations per subject
+    out.N = sum(m);  % total number of observations
+end
 
 
 % Set final output
