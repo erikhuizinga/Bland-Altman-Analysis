@@ -162,15 +162,15 @@ HName = 'Plasma volume (Hurley) (%)';
 % The following figure corresponds to figure 4 in [BA1999]. Its subplots
 % correspond to figures 4a and 4b respectively.
 f4 = figure;
-ax(1) = subplot(2,1,1);
-ax(2) = subplot(2,1,2);
+ax4(1) = subplot(2,1,1);
+ax4(2) = subplot(2,1,2);
 
 % The following could be accomplished with one line of code, but the
 % graphs in the article are constructed a bit differently, so here we
 % create the graphs accordingly, but need to do it with two separate lines.
-ba(ax(1), Hurley,Nadler, 'XName',HName, 'YName',NName, ...
+ba(ax4(1), Hurley,Nadler, 'XName',HName, 'YName',NName, ...
     'PlotCorrelation',true)
-ba(ax(2), Nadler,Hurley, 'XName',NName, 'YName',HName, ...
+ba(ax4(2), Nadler,Hurley, 'XName',NName, 'YName',HName, ...
     'PlotMeanDifference',true)
 % In one line of code it would have been:
 % ba(ax, Hurley,Nadler, 'PlotAll',true)
@@ -190,13 +190,13 @@ disp 'Section 3.1 Logarithmic transformation'
 % Figure 5 in [BA1999] is reproduced in the following figure. The subplots
 % are article figures 5a and 5b respectively.
 f5 = figure;
-ax(1) = subplot(2,1,1);
-ax(2) = subplot(2,1,2);
+ax5(1) = subplot(2,1,1);
+ax5(2) = subplot(2,1,2);
 
 % perform BAA using log transformation
-ba(ax(1), Hurley,Nadler, 'XName',HName, 'YName',NName, ...
+ba(ax5(1), Hurley,Nadler, 'XName',HName, 'YName',NName, ...
     'PlotCorrelation',true, 'Transform',@log)
-stats = ba(ax(2), Nadler,Hurley, 'XName',NName, 'YName',HName, ...
+stats = ba(ax5(2), Nadler,Hurley, 'XName',NName, 'YName',HName, ...
     'PlotMeanDifference',true, ...
     'PlotStatistics','basic', ...
     'Transform',@log);
@@ -244,14 +244,14 @@ GName = 'Fat (g/100 ml; Gerber)';
 % Figure 7 [BA1999, p. 147] and its subfigures correspond to the following
 % figure and its subplots.
 f7 = figure;
-ax(1) = subplot(2,1,1);
-ax(2) = subplot(2,1,2);
+ax7(1) = subplot(2,1,1);
+ax7(2) = subplot(2,1,2);
 
 % Perform default BAA on the data.
-ba(ax(1), ...
+ba(ax7(1), ...
     Gerber,Trig, 'XName',GName, 'YName',TName, ...
     'PlotCorrelation',true)
-ba(ax(2), ...
+ba(ax7(2), ...
     Trig,Gerber, 'XName',TName, 'YName',GName, ...
     'PlotMeanDifference',true)
 
@@ -366,12 +366,12 @@ ICName = 'Impedance cardiography';
 
 % Figure 9 in [BA1999, p. 155] corresponds to the following figure.
 f9 = figure;
-ax(1) = subplot(2,1,1);
-ax(2) = subplot(2,1,2);
+ax9(1) = subplot(2,1,1);
+ax9(2) = subplot(2,1,2);
 
 % Graph subject mean against within-subject standard deviation for each
 % method separately.
-ba(ax, cellRV,cellIC, 'XName',RVName, 'YName',ICName, ...
+ba(ax9, cellRV,cellIC, 'XName',RVName, 'YName',ICName, ...
     'PlotMeanSD','separate', 'PlotStatistics','basic')
 
 % Figure 10 in [BA1999, p. 156] corresponds to the following figure.
