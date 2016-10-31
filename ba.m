@@ -454,8 +454,15 @@ switch lower(char(transFun))
         end
         
         % Transform
-        xok = transFun(xok);
-        yok = transFun(yok);
+        if iscell(xok)
+            xok = cellfun(transFun, xok, 'UniformOutput', false);
+            yok = cellfun(transFun, yok, 'UniformOutput', false);
+            
+        else
+            xok = transFun(xok);
+            yok = transFun(yok);
+        end
+        
     otherwise
         % Do not transform
 end
