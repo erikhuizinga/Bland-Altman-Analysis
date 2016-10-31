@@ -425,6 +425,27 @@ yName = strjoin(YName, ', ');
     = validatePlotArgs(PlotDefault, PlotMeanDifference, PlotMeanRatio, ...
                        PlotMeanSD, PlotCorrelation, h);
 
+% Exclude zeroes, which are invalid in ratio calculations
+if doPlotMR
+    % Determine data format
+    if iscell(xok)
+        % Determine logical indices of zeroes
+        lZero = cellfun(@(v) v == 0, yok, 'UniformOutput', false);
+        
+        % Exclude them
+        xok = cellfun(@(v, l) v(~l), xok, lZero, 'UniformOutput', false);
+        yok = cellfun(@(v, l) v(~l), yok, lZero, 'UniformOutput', false);
+        
+    else
+        % Determine logical indices of zeroes in y, which is the divisor
+        lZero = yok == 0;
+        
+        % Exclude them
+        xok(lZero) = [];
+        yok(lZero) = [];
+    end
+end
+
                    
 % Exclude unwanted samples/subjects
 lex = false(size(xok, 1), 1);
