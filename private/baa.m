@@ -28,7 +28,7 @@ t = Tinv(p, n - 1);  % Calculate t-statistics for p with n-1 d.o.f.
 
 
 % Calculate difference statistics
-[muXY, d, varXWithin, varYWithin, loaDCI, loaD, muD, muDCI, eLoaD, ...
+[muXY, D, varXWithin, varYWithin, loaDCI, loaD, muD, muDCI, eLoaD, ...
     eMuD, sD, polyMuXYD, msePolyMuXYD, sResPolyMuXYD, polyLLoaD, ...
     polyULoaD, m, X, Y] ...
     = statMuS(x, y, 'difference', n, z, t, doConstantRegression, ...
@@ -36,7 +36,7 @@ t = Tinv(p, n - 1);  % Calculate t-statistics for p with n-1 d.o.f.
 
 
 % Calculate mean-difference correlation statistics
-[rSMuD, pRSMuD] = corr(muXY, d, 'type', 'Spearman');
+[rSMuD, pRSMuD] = corr(muXY, D, 'type', 'Spearman');
 
 
 % Calculate ratio statistics
@@ -109,7 +109,7 @@ end
 
 % Create mean-difference plot
 if doPlotMD
-    plotM(axMD, muXY, d, 'difference', 'D', 0, doPlotBasicStats, ...
+    plotM(axMD, muXY, D, 'difference', 'D', 0, doPlotBasicStats, ...
           loaDCI, pRSMuD, rSMuD, loaD, a, z, muD, muDCI, ...
           doPlotExtendedStats, eLoaD, eMuD, '-', n, xName, yName, ...
           doPlotRegStats, polyMuXYD, msePolyMuXYD, polyLLoaD, ...
@@ -183,11 +183,12 @@ end
 
 %% Set outputs
 % Set difference outputs
-out.difference.bias = muD;  % bias (mean) of the difference (D)
+out.difference.bias = muD;  % bias (mean difference (D))
 out.difference.biasCI = muDCI;  % confidence interval (CI) of bias
 out.difference.loa = loaD;  % limits of agreement (LOA) of D
 out.difference.loaCI = loaDCI;  % CI of the LOA of D
 out.difference.std = sD;  % standard deviation (SD) of D
+out.difference.D = D;  % difference to plot against mean
 out.difference.Spearman.r = rSMuD;  % Spearman rank correlation of D and mean (mu)
 out.difference.Spearman.p = pRSMuD;  % p-value of rSMuD
 out.difference.poly.p = polyMuXYD;  % simple linear regression of D on mu
@@ -197,11 +198,12 @@ out.difference.poly.stde = sResPolyMuXYD;  % SD of the residuals
 
 % Set ratio outputs
 if doPlotMR
-    out.ratio.bias = muR;
+    out.ratio.bias = muR;  % mean ratio
     out.ratio.biasCI = muRCI;
     out.ratio.loa = loaR;
     out.ratio.loaCI = loaRCI;
     out.ratio.std = sR;
+    out.ratio.R = R;  % ratio to plot against mean
     out.ratio.Spearman.r = rSMuR;
     out.ratio.Spearman.p = pRSMuR;
     out.ratio.poly.p = polyMuXYR;
@@ -222,6 +224,7 @@ end
 % Set general outputs
 out.xy.x = X;  % x-values used in the calculations
 out.xy.y = Y;  % y-values used in the calculations
+out.xy.mu = muXY;  % mean values to plot against
 out.n = n;  % number of subjects
 
 
