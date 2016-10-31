@@ -132,9 +132,7 @@ function varargout = ba(varargin)
 %   'PlotCorrelation': Create correlation graph
 %   false (default) | true
 %   Create the correlation graph if the specified value is true. The
-%   correlation graph is a scatter plot of x and y. Specifying the
-%   'PlotAll' Name-Value pair argument as true creates the correlation
-%   plot, regardless of the 'PlotCorrelation' value. If the correlation
+%   correlation graph is a scatter plot of x and y. If the correlation
 %   graph is created and an output arguments is specified, the output
 %   argument contains a field called correlation with the correlation
 %   statistics.
