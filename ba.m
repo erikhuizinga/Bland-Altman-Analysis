@@ -426,7 +426,7 @@ yName = strjoin(YName, ', ');
                        PlotMeanSD, PlotCorrelation, h);
 
                    
-% Exclude unwanted samples
+% Exclude unwanted samples/subjects
 lex = false(size(xok, 1), 1);
 lex(Exclude) = true;
 xok(lex, :) = [];
