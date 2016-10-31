@@ -155,7 +155,7 @@ if doPlotRegStats
     
     % Add mean statistic regression text
     text(xl(2) - padding/2, yRegXY(2) + sign(polyXY(1)) * padding/2, ...
-        sprintf('$f_%s(\\mu)$', sMYName), 'Interpreter', 'latex', ...
+        sprintf('$f_{\\overline{%s}}(\\mu)$', sMYName), 'Interpreter', 'latex', ...
         'HorizontalAlignment', 'right')
     
     % Add lower LOA line
@@ -163,17 +163,13 @@ if doPlotRegStats
     regLineLLoa = line(xlim, yLLoa);
     regLineLLoa.Color = 'k';
     if doConReg
-        strLoaFun = sprintf('s_{res}');
-        strLoaDC = sprintf('%.2f×s_res', z);  %TODO check × (times)
+        strLoaFun = sprintf('s_{\\varepsilon}');
         
     else
-        strLoaFun = sprintf('\\sqrt{\\pi/2}f_{res}(\\mu)');
-        strLoaDC = sprintf('%.2f×f_res(µ)', ...  %TODO check × (times) and µ
-            z * sqrt(pi / 2));
+        strLoaFun = sprintf('\\sqrt{\\pi/2}f_{\\varepsilon}(\\mu)');
     end
     regLineLLoa.UserData = dcStruct( ...
-        sprintf('f_lower(µ) - %.2f×f_res(µ) = %s×µ + %s', ...  %TODO check × (times) and µ
-        sqrt(pi / 2) * z, ...
+        sprintf('f_lower(µ) = %s×µ + %s', ...  %TODO check × (times) and µ
         num2str(polyLLoa(1)), num2str(polyLLoa(2))), 'µ', ...  %TODO check µ
         sprintf('lower %s%% LOA', strP), [], [], @dcXYZ);
     
@@ -182,8 +178,8 @@ if doPlotRegStats
     regLineULoa = line(xlim, yULoa);
     regLineULoa.Color = 'k';
     regLineULoa.UserData = dcStruct( ...
-        sprintf('f_upper(µ) + %s = %s×µ + %s', ...  %TODO check × (times) and µ
-        strLoaDC, num2str(polyULoa(1)), num2str(polyULoa(2))), ...
+        sprintf('f_upper(µ) = %s×µ + %s', ...  %TODO check × (times) and µ
+        num2str(polyULoa(1)), num2str(polyULoa(2))), ...
         'µ', ...  %TODO check µ
         sprintf('upper %s%% LOA', strP), [], [], @dcXYZ);
     
@@ -196,12 +192,14 @@ if doPlotRegStats
     
     % Add lower LOA text
     text(xl(2) - padding/2, yLLoa(2) + sign(polyLLoa(1)) * padding/2, ...
-         sprintf('$f_%s(\\mu)-%.2f%s$', sMYName, z, strLoaFun), ...
+         sprintf('$f_{\\overline{%s}}(\\mu)-%.2f%s$', sMYName, z, ...
+                 strLoaFun), ...
          'Interpreter', 'latex', 'HorizontalAlignment', 'right')
     
     % Add upper LOA text
     text(xl(2) - padding/2, yULoa(2) + sign(polyULoa(1)) * padding/2, ...
-         sprintf('$f_%s(\\mu)+%.2f%s$', sMYName, z, strLoaFun), ...
+         sprintf('$f_{\\overline{%s}}(\\mu)+%.2f%s$', sMYName, z, ...
+                 strLoaFun), ...
          'Interpreter', 'latex', 'HorizontalAlignment', 'right')
 end
 
