@@ -183,51 +183,52 @@ end
 
 %% Set outputs
 % Set difference outputs
-out.difference.mu = muD;  % mean (bias) of the difference (D)
-out.difference.muCI = muDCI;  % confidence interval (CI) of muD
+out.difference.bias = muD;  % bias (mean) of the difference (D)
+out.difference.biasCI = muDCI;  % confidence interval (CI) of bias
 out.difference.loa = loaD;  % limits of agreement (LOA) of D
 out.difference.loaCI = loaDCI;  % CI of the LOA of D
-out.difference.s = sD;  % standard deviation (SD) of D
-out.difference.rSMu = rSMuD;  % Spearman rank correlation of D and mean (mu)
-out.difference.pRSMu = pRSMuD;  % p-value of rSMuD
-out.difference.polyMu = polyMuXYD;  % simple linear regression of D on mu
-out.difference.msePolyMu = msePolyMuXYD;  % mean squared error (MSE) of polyMuXYD
-out.difference.sPolyResidual = sResPolyMuXYD;  % SD of the residuals
+out.difference.std = sD;  % standard deviation (SD) of D
+out.difference.Spearman.r = rSMuD;  % Spearman rank correlation of D and mean (mu)
+out.difference.Spearman.p = pRSMuD;  % p-value of rSMuD
+out.difference.poly.p = polyMuXYD;  % simple linear regression of D on mu
+out.difference.poly.mse = msePolyMuXYD;  % mean squared error (MSE) of polyMuXYD
+out.difference.poly.stde = sResPolyMuXYD;  % SD of the residuals
 
 
 % Set ratio outputs
 if doPlotMR
-    out.ratio.mu = muR;
-    out.ratio.muCI = muRCI;
+    out.ratio.bias = muR;
+    out.ratio.biasCI = muRCI;
     out.ratio.loa = loaR;
     out.ratio.loaCI = loaRCI;
-    out.ratio.s = sR;
-    out.ratio.rSMu = rSMuR;
-    out.ratio.pRSMu = pRSMuR;
-    out.ratio.polyMu = polyMuXYR;
-    out.ratio.msePolyMu = msePolyMuXYR;
-    out.ratio.sPolyResidual = sResPolyMuXYR;
+    out.ratio.std = sR;
+    out.ratio.Spearman.r = rSMuR;
+    out.ratio.Spearman.p = pRSMuR;
+    out.ratio.poly.p = polyMuXYR;
+    out.ratio.poly.mse = msePolyMuXYR;
+    out.ratio.poly.stde = sResPolyMuXYR;
 end
 
 
 % Set correlation outputs
 if doPlotC
-    out.correlation.rho = rhoXY;  % Pearson correlation of x with y
-    out.correlation.p = pRhoXY;  % p-value of rhoXY
-    out.correlation.poly = polyXY;  % simple linear regression of Y on X
-    out.correlation.polyMSE = msePXY;  % MSE of the regression
+    out.xy.Pearson.rho = rhoXY;  % Pearson correlation of x with y
+    out.xy.Pearson.p = pRhoXY;  % p-value of rhoXY
+    out.xy.poly.p = polyXY;  % simple linear regression of Y on X
+    out.xy.poly.mse = msePXY;  % MSE of the regression
 end
 
 
 % Set general outputs
-out.x.data = X;  % x-values used in the calculations
-out.y.data = Y;  % y-values used in the calculations
+out.xy.x = X;  % x-values used in the calculations
+out.xy.y = Y;  % y-values used in the calculations
 out.n = n;  % number of subjects
+
 
 % Set repeated measurements ourputs
 if doRepeated
-    out.x.varWithin = varXWithin;  % within-subject variance for x
-    out.y.varWithin = varYWithin;  % within-subject variance for y
+    out.xy.varw.x = varXWithin;  % within-subject variance for x
+    out.xy.varw.y = varYWithin;  % within-subject variance for y
     out.m = m;  % number of observations per subject
     out.N = sum(m);  % total number of observations
 end

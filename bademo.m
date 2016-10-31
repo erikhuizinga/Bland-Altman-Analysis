@@ -60,14 +60,14 @@ S1 = S(:,1);
 stats = ba(J1,S1);
 
 % show results, compare with comments
-muD = stats.difference.mu; % mean difference (bias)
-display(muD) % [BA1999]: -16.29 mmHg
+bias = stats.difference.bias; % mean difference (bias)
+display(bias) % [BA1999]: -16.29 mmHg
 
-sD = stats.difference.s; % standard deviation of difference
-display(sD) % [BA1999]: 19.61 mmHg
+std = stats.difference.std; % standard deviation of difference
+display(std) % [BA1999]: 19.61 mmHg
 
-loaD = stats.difference.loa; % limits of agreement (LOA)
-display(loaD) % [BA1999]: [-54.7, 22.1] mmHg
+loa = stats.difference.loa; % limits of agreement (LOA)
+display(loa) % [BA1999]: [-54.7, 22.1] mmHg
 
 % exclude subjects 78 and 80 [BA1999, p. 139]
 % The indices of the outliers can be found using the data cursor: click on
@@ -78,16 +78,16 @@ lEx = (n==78) | (n==80); % alternative: logical indices
 stats = ba(J1,S1, 'Exclude',iEx);
 
 % show results, compare with comments
-muD = stats.difference.mu;
-display(muD) % [BA1999]: -14.9 mmHg
+bias = stats.difference.bias;
+display(bias) % [BA1999]: -14.9 mmHg
 % Erratum: a small error, probably a typo, exist in the article [BA1999].
 % Note the difference between the muD and the article's mean difference.
 % However, because the limits of agreement are the same and, of course, the
 % mean difference equals the mean of the limits of agreement, thus the
 % calculation here appears to be correct.
 
-loaD = stats.difference.loa;
-display(loaD) % [BA1999]: [-43.6, 15.0] mmHg
+loa = stats.difference.loa;
+display(loa) % [BA1999]: [-43.6, 15.0] mmHg
 
 %% 2.1 Graphical presentation of agreement [BA1999 p. 140]
 disp 'Section 2.1 Graphical presentation of agreement'
@@ -103,11 +103,11 @@ f1_2 = figures(2);
 stats = ba(f1_2, J1,S1, 'XName',JName, 'YName',SName, 'PlotDefault',true);
 
 % show results, compare with comments
-rSMuD = stats.difference.rSMu;
+r = stats.difference.Spearman.r;
 % [BA1999]: 0.07 (p. 140), here -0.03, so an error exists either here or in
 % the article. Either way, the correlation is not significantly different
 % from zero: see s.difference.pRSMu for the p-value.
-display(rSMuD) % Spearman rank correlation between mean and difference
+display(r) % Spearman rank correlation between mean and difference
 
 % This figure is equal to the previous, but has added limits of agreement.
 % It corresponds to figure 3 in [BA1999].
@@ -132,15 +132,15 @@ stats = ba(f3, J1,S1, 'XName',JName, 'YName',SName, ...
     'PlotMeanDifference',true, 'PlotStatistics','extended');
 
 % show results, compare with comments
-muDCI = stats.difference.muCI;
+biasCI = stats.difference.biasCI;
 % muDCI [BA1999, p. 142]: [-20.5 -12.1]
-display(muDCI)
+display(biasCI)
 
-loaDCI = stats.difference.loaCI; % confidence interval of the loa
+loaCI = stats.difference.loaCI; % confidence interval of the loa
 % loaCI [BA1999, p. 142]:
 % [-61.9, 14.9
 %  -47.5, 29.3] mmHg
-display(loaDCI)
+display(loaCI)
 
 % some text output
 f = f3;
@@ -202,22 +202,22 @@ stats = ba(ax5(2), Nadler,Hurley, 'XName',NName, 'YName',HName, ...
     'Transform',@log);
 
 % show results, compare with comments
-logMuD = stats.difference.mu;
-display(logMuD) % [BA1999]: 0.099
+logBias = stats.difference.bias;
+display(logBias) % [BA1999]: 0.099
 
-logLoaD = stats.difference.loa;
-display(logLoaD) % [BA1999]: [0.056, 0.141]
+logLoa = stats.difference.loa;
+display(logLoa) % [BA1999]: [0.056, 0.141]
 
-logLoaDCI = stats.difference.loaCI;
-lowerLogLoaDCI = logLoaDCI(:,1); % lower LOA CI
-display(lowerLogLoaDCI) % [BA1999] [0.049; 0.064]
+logLoaCI = stats.difference.loaCI;
+lowerLogLoaCI = logLoaCI(:,1); % lower LOA CI
+display(lowerLogLoaCI) % [BA1999] [0.049; 0.064]
 
 % backtransformation of results, compare with comments
-muD = exp(logMuD);
-display(muD) % [BA1999]: 1.11
+bias = exp(logBias);
+display(bias) % [BA1999]: 1.11
 
-loaD = exp(logLoaD);
-display(loaD) % [BA1999]: [1.06, 1.15]
+loa = exp(logLoa);
+display(loa) % [BA1999]: [1.06, 1.15]
 
 % Figure 6 in [BA1999] corresponds to this figure.
 f6 = figure;
@@ -273,8 +273,8 @@ stats = ba(f8, Trig,Gerber, 'XName',TName, 'YName',GName, ...
 % show results, compare with comments
 % standard deviation of residual of simple linear regression polynomial of
 % difference on mean:
-sPolyResidualD = stats.difference.sPolyResidual;
-display(sPolyResidualD) % [BA1999]: 0.08033 (s_d on p. 148)
+stde = stats.difference.poly.stde;
+display(stde) % [BA1999]: 0.08033 (s_d on p. 148)
 % Erratum: [BA1999] shows a slightly different value. This is less than
 % 1.2% error, but the difference is there.
 
@@ -303,31 +303,31 @@ disp 'Section 5.1 Equal numbers of replicates'
 stats = ba(J,S);
 
 % show results, compare with comments
-varWithinJ = stats.x.varWithin; % within-subject variance of measurements J
-display(varWithinJ) % [BA1999, p. 151]: 37.408
+varwJ = stats.xy.varw.x; % within-subject variance of measurements J
+display(varwJ) % [BA1999, p. 151]: 37.408
 
-varWithinS = stats.y.varWithin; % within-subject variance of measurements S
-display(varWithinS) % [BA1999, p. 151]: 83.141
+varwS = stats.xy.varw.y; % within-subject variance of measurements S
+display(varwS) % [BA1999, p. 151]: 83.141
 
-muD = stats.difference.mu; % mean difference between J and S (bias)
-display(muD) % [BA1999, p. 151]: -15.62 mmHg
+bias = stats.difference.bias; % mean difference between J and S (bias)
+display(bias) % [BA1999, p. 151]: -15.62 mmHg
 
-sD = stats.difference.s; % standard deviation of the difference
-display(sD) % [BA1999, p. 152]: 20.95 mmHg
+std = stats.difference.std; % standard deviation of the difference
+display(std) % [BA1999, p. 152]: 20.95 mmHg
 
-loaD = stats.difference.loa; % limits of agreement
-display(loaD) % [BA1999, p. 152]: [-56.68, 25.44] mmHg
+loa = stats.difference.loa; % limits of agreement
+display(loa) % [BA1999, p. 152]: [-56.68, 25.44] mmHg
 % Notice how the values of muD, sD and loa are very similar to those of
 % [BA1999] section 2, which is to be expected (they do not change for
 % repeated measurements).
 
 % show more results, compare with comments
-muDCI = stats.difference.muCI;
-display(muDCI) % [BA1999]:
+biasCI = stats.difference.biasCI;
+display(biasCI) % [BA1999]:
 % value not presented, but notice similarity to muDCI in section 2.
 
-loaDCI = stats.difference.loaCI;
-display(loaDCI) % [BA1999, p. 153]:
+loaCI = stats.difference.loaCI;
+display(loaCI) % [BA1999, p. 153]:
 % [-63.5, 18.70
 %  -49.9, 32.2] mmHg
 % [BA1999] uses an incorrect calculation, because it uses 1.96. This value
@@ -383,29 +383,29 @@ stats = ba(f10, cellRV,cellIC, 'XName',RVName, 'YName',ICName, ...
     'PlotMeanDifference',true);
 
 % show results, compare with comments
-varWithinRV = stats.x.varWithin; % within-subject variance component from RV
-display(varWithinRV) % [BA1999]: 0.1072
+varwRV = stats.xy.varw.x; % within-subject variance component from RV
+display(varwRV) % [BA1999]: 0.1072
 
-varWithinIC = stats.y.varWithin; % within-subject variance component from IC
-display(varWithinIC) % [BA1999]: 0.1379
+varwIC = stats.xy.varw.y; % within-subject variance component from IC
+display(varwIC) % [BA1999]: 0.1379
 
 % standard deviation of differences between single observations
-sD = stats.difference.s;
-display(sD) % [BA1999]: 1.0517
+std = stats.difference.std;
+display(std) % [BA1999]: 1.0517
 
-muD = stats.difference.mu; % mean difference, i.e. bias
-display(muD) % [BA1999]: 0.7092
+bias = stats.difference.bias; % mean difference, i.e. bias
+display(bias) % [BA1999]: 0.7092
 
 loa = stats.difference.loa; % limits of agreement
 display(loa) % [BA1999]: loa = [-1.3521, 2.7705]
 
 % show more results
-muDCI = stats.difference.muCI;
-display(muDCI) % [BA1999]:
+biasCI = stats.difference.biasCI;
+display(biasCI) % [BA1999]:
 % value not presented, but given here for completeness
 
-loaDCI = stats.difference.loaCI;
-display(loaDCI) % [BA1999]:
+loaCI = stats.difference.loaCI;
+display(loaCI) % [BA1999]:
 % value not presented, but given here for completeness
 
 % some text output
@@ -434,12 +434,12 @@ stats = ba( cellRV,cellIC, 'XName',RVName, 'YName',ICName, ...
     'ConstantTrueValue',false);
 
 % show results, compare with comments
-sD = stats.difference.s;
-display(sD) % [BA2007]: 0.99062408
+std = stats.difference.std;
+display(std) % [BA2007]: 0.99062408
 % (to see this many digits in MATLAB, use format long)
 
-muD = stats.difference.mu;
-display(muD) % [BA2007]: 0.6021667
+bias = stats.difference.bias;
+display(bias) % [BA2007]: 0.6021667
 
-loaD = stats.difference.loa;
-display(loaD) % [BA2007]: [-1.3394565, 2.5437899]
+loa = stats.difference.loa;
+display(loa) % [BA2007]: [-1.3394565, 2.5437899]
