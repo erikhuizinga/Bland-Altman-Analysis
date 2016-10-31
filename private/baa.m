@@ -222,8 +222,8 @@ end
 
 
 % Set general outputs
-out.xy.x = X;  % x-values used in the calculations
-out.xy.y = Y;  % y-values used in the calculations
+out.xy.x = x;  % x-values used in the calculations
+out.xy.y = y;  % y-values used in the calculations
 out.xy.mu = muXY;  % mean values to plot against
 out.n = n;  % number of subjects
 
