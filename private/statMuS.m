@@ -89,7 +89,7 @@ if all(m == 1)  % No repeated measurements, i.e. single mearuements
     
 else  % BAA for repeated measurements with (un)equal numbers of replicates
     % Prepare for ANOVA
-    for sub = n:-1:1
+    for sub = n : -1 : 1
         subjects{sub} = sub * ones(1, m(sub));
     end
     subjects = [subjects{:}]; % subject numbers, groups in ANOVA
@@ -98,10 +98,10 @@ else  % BAA for repeated measurements with (un)equal numbers of replicates
     N = numel(X);  % Equals numel(Y)
     
     % Calculate correction term
-    corrM = 1-mean(1./m);  % Equal to 1/n*sum(1./m), i.e. BA1999 notation
+    corrM = 1 - mean(1 ./ m);  % Equal to 1/n * sum(1 ./ m), i.e. BA1999 notation
     
     % Perform one-way ANOVA on X and Y with subjects as groups
-    for sub = n:-1:1  % Loop over subjects, the groups in ANOVA
+    for sub = n : -1 : 1  % Loop over subjects, the groups in ANOVA
         % Calculate squared errors (SE) per subject
         SEX(sub) = sum((X(subjects == sub) - muXWithin(sub)).^2);
         SEY(sub) = sum((Y(subjects == sub) - muYWithin(sub)).^2);
