@@ -57,7 +57,7 @@ if doPlotBasicStats
         % 1996;312:572: http://dx.doi.org/10.1136/bmj.312.7030.572
         strPRSMuD = sprintf('\\itp\\rm < 0.0001');
     else
-        strPRSMuD = sprintf('\\itp\\rm = %.2f', pRSMuY);
+        strPRSMuD = sprintf('\\itp\\rm = %.2g', pRSMuY);
     end
     sM.DisplayName = sprintf('\\itr_s\\rm = %.2f (%s)', rSMuY, strPRSMuD);
     legEntries(end + 1) = sM;
