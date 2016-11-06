@@ -196,19 +196,19 @@ function varargout = ba(varargin)
 %   The only output argument, stats, is optional. It is a scalar structure
 %   containing multiple fields with descriptive statistics about the
 %   agreement of x and y. The number of fields in stats varies depending on
-%   the input arguments. By default stats contains three fields, being
-%   difference, x and y. Additional fields in stats are ratio and
-%   correlation. They exist depending on the requested graphs. If the
-%   mean-ratio graph is requested using the 'PlotMeanRatio' Name-Value pair
-%   argument, then stats is returned with the ratio field. If the
-%   correlation plot is requested using the 'PlotCorrelation' or
-%   'PlotDefault' Name-Value pair arguments, then stats is returned with
-%   the correlation field. Note that the difference field is returned
-%   regardless of the 'PlotMeanDifference' Name-Value pair argument.
+%   the input arguments. By default stats contains fields difference, xy
+%   and n. Additional fields in stats are ratio, m and N. They exist
+%   depending on the requested graphs and the input data. If the mean-ratio
+%   graph is requested using the 'PlotMeanRatio' Name-Value pair argument,
+%   then stats is returned with the ratio field. If BAA for repeated
+%   measurements is performed, the m field is returned in stats. If the
+%   correlation plot is requested using the 'PlotCorrelation' Name-Value
+%   pair argument, then stats is returned with additional fields in the xy
+%   field. Note that the difference field is returned regardless of the
+%   'PlotMeanDifference' Name-Value pair argument.
 %
 %   Fields difference and ratio are described together below, after which
-%   fields x and y are described together too. Lastly, field correlation is
-%   described.
+%   field xy is described.
 %
 %   The difference and ratio fields are structures themselves, containing
 %   the statistics about the differences and ratios repectively between
@@ -216,12 +216,13 @@ function varargout = ba(varargin)
 %   described below (the word statistic refers to either difference or
 %   ratio):
 %
-%   mu: the mean statistic between x and y, also called the bias.
-%   Example: stats.difference.mu is the mean difference.
+%   bias: the bias between x and y, also called the mean statistic.
+%   Example: stats.difference.bias is the mean difference.
 %
-%   muCI: the 95% (default, depending on alpha) confidence interval of
-%   the mean statistic.
-%   Example: stats.ratio.muCI is the confidence interval of the mean ratio.
+%   biasCI: the 95% (default, depending on alpha) confidence interval of
+%   the bias.
+%   Example: stats.ratio.biasCI is the confidence interval of the mean
+%   ratio.
 %
 %   loa: the 95% (default, depending on alpha) limits of agreement, a 2
 %   element vector. The first element is the lower limit of agreement, the
@@ -237,57 +238,79 @@ function varargout = ba(varargin)
 %   Ecample: stats.ratio.loaCI(:, 2) is the confidence interval of the
 %   upper limit of agreement of the ratios.
 %
-%   s: the standard deviation of the statistic.
-%   Example: stats.difference.s is the standard deviation of the
+%   sts: the standard deviation of the statistic.
+%   Example: stats.difference.sts is the standard deviation of the
 %   differences.
+% 
+%   D: the differences used in the calculations. For the ratio field, this
+%   field is called R.
+%   Example: stats.ratio.R is the array of ratios used in the calculations.
 %
-%   rSMu: the Spearman rank correlation between mean and statistic.
-%   Example: stats.ratio.rSMu is the Spearman rank correlation between mean
-%   and the ratios.
+%   Spearman.r: the Spearman rank correlation between mean and statistic.
+%   Example: stats.difference.Spearman.r is the Spearman rank correlation
+%   between mean and the differences.
 %
-%   pRSMu: the p-value of the Spearman rank correlation for testing the
-%   hypothesis of no correlation against the alternative that there is a
-%   nonzero correlation.
-%   Example: stats.difference.pRSMu is the p-value of the Spearman rank
-%   correlation between mean and difference, to test the hypothesis of no
+%   Spearman.p: the p-value of the Spearman rank correlation for testing
+%   the hypothesis of no correlation against the alternative that there is
+%   a nonzero correlation.
+%   Example: stats.ratio.Spearman.p is the p-value of the Spearman rank 
+%   correlation between mean and ratio, to test the hypothesis of no
 %   correlation against the alternative of nonzero correlation.
 %
-%   polyMu: the polynomial coefficients of the simple linear regression of
-%   the statistic on the mean. The first element of polyMu is the slope,
-%   the second the intercept.
-%   Example: stats.ratio.polyMu(2) is the intercept of the simple linear
-%   regression line of the ratio on the mean.
+%   poly.bias: the polynomial coefficients of the simple linear regression
+%   of the statistic on the mean. The first element is the slope, the
+%   second the intercept.
+%   Example: stats.difference.poly.bias(2) is the intercept of the simple
+%   linear regression line of the difference on the mean.
 %
-%   msePolyMu: the mean squared error (MSE) of the simple linear regression
+%   poly.mse: the mean squared error (MSE) of the simple linear regression
 %   of the statistic on the mean.
-%   Example: stats.difference.msePolyMu is the MSE of the simple linear
-%   regression of the difference on the mean.
+%   Example: stats.ratio.poly.mse is the MSE of the simple linear
+%   regression of the ratio on the mean.
+%   
+%   poly.std: the standard deviation of the residuals of the simple linear
+%   regression.
 %
-%   The x and y fields of structure stats contain statistics about inputs x
-%   and y that are calculated in BAA. The fields in x and y are structures
-%   themselves and have the following fields (the word input referring to x
-%   or y):
+%   The xy field of stats contains statistics about inputs x and y that are
+%   calculated in BAA. It contains the following fields:
 %
-%   varWithin: the within-subject variance of the input. varWithin equals
-%   zero for BAA without repeated measurements, but can be non-zero in BAA
-%   for repeated measurements.
-%   Example: stats.x.varWithin is the within-subject variance of input x.
+%   x: the x values used in the calculations. They are the values used
+%   after preparation and exclusion of invalid samples of input x.
 %
-%   If the correlation field exists in stats, it contains the following
-%   fields:
+%   y: the y values used in the calculations. They are the values used
+%   after preparation and exclusion of invalid samples of input y.
+% 
+%   mu: the mean values of the inputs used in the calculations and in the
+%   plots.
+% 
+%   The n field contains the number of subjects. In BAA for repeated
+%   measurements (see also the section below) this differs from the number
+%   of observations in inputs x and y. In that case the m and N fields are
+%   also returned. m contains the number of observations per subject in x
+%   and y, N is the total number of observations.
+%   
+%   In the repeated measurements case, the variance within each subject may
+%   be nonzero. The xy.varw.x and xy.varw.y fields are returned then too,
+%   which are the within-subject variances.
+%   Example: stats.xy.varw.x is the within-subject variance of input x.
 %
-%   rho: the Pearson correlation coefficient between inputs x and y.
+%   If the correlation graph is created, stats contains additional fields
+%   with some correlation statistics.
 %
-%   p: the p-value of the Pearson correlation coefficient between inputs x
+%   xy.Pearson.rho: the Pearson correlation coefficient between inputs x
 %   and y.
 %
-%   poly: the polynomial coefficients of the simple linear regression of y
-%   on x. The first element in poly is the slope, the second the intercept.
-%   Example: stats.correlation.poly(1) is the slope of the simple linear
+%   xy.Pearson.p: the p-value of the Pearson correlation coefficient
+%   between inputs x and y.
+%
+%   xy.poly.xy: the polynomial coefficients of the simple linear
+%   regression of y on x. The first element in poly is the slope, the
+%   second the intercept.
+%   Example: stats.xy.poly.xy(1) is the slope of the simple linear
 %   regression line of y on x.
 %
-%   polyMSE: the mean squared error (MSE) of the simple linear regression
-%   of y on x.
+%   xy.poly.mse: the mean squared error (MSE) of the simple linear
+%   regression of y on x.
 %
 %   Bland-Altman Analysis for repeated measurements
 %   When performing regular limits of agreement (LOA) estimation through
