@@ -90,7 +90,7 @@ stats = ba(J1, S1, 'Exclude', iEx);
 bias = stats.difference.bias;
 display(bias)  % [BA1999]: -14.9 mmHg
 % Erratum: a small error, probably a typo, exist in the article [BA1999].
-% Note the difference between the muD and the article's mean difference.
+% Note the difference between the bias and the article's mean difference.
 % However, because the limits of agreement are the same and, of course, the
 % mean difference equals the mean of the limits of agreement, thus the
 % calculation here appears to be correct.
@@ -118,7 +118,7 @@ stats = ba(f1_2, J1, S1, 'XName', JName, 'YName', SName, ...
 r = stats.difference.Spearman.r;
 % [BA1999]: 0.07 (p. 140), here -0.03, so an error exists either here or in
 % the article. Either way, the correlation is not significantly different
-% from zero: see s.difference.pRSMu for the p-value.
+% from zero: see stats.difference.Spearman.p for the p-value.
 display(r) % Spearman rank correlation between mean and difference
 
 
@@ -128,7 +128,7 @@ display(r) % Spearman rank correlation between mean and difference
 f3 = figure;
 
 % Create the mean-difference graph and plot basic statistics, i.e. bias and
-% limits of agreement.
+% limits of agreement
 ba(f3, J1, S1, 'XName', JName, 'YName', SName, ...
     'PlotMeanDifference', true, 'PlotStatistics', 'basic')
 
@@ -188,20 +188,21 @@ ax4(1) = subplot(2, 1, 1);
 ax4(2) = subplot(2, 1, 2);
 
 % Perform Bland-Altman analysis
-% The following could be accomplished with one line of code, but the
-% graphs in the article are constructed a bit differently, so here we
-% create the graphs accordingly, but need to do it with two separate lines.
+% The following could be accomplished with one line of code, but the graphs
+% in the article are constructed a bit differently, so here we create the
+% graphs accordingly, but need to do it with two separate lines.
 ba(ax4(1), Hurley, Nadler, 'XName', HName, 'YName', NName, ...
     'PlotCorrelation', true)
 ba(ax4(2), Nadler, Hurley, 'XName', NName, 'YName', HName, ...
     'PlotMeanDifference', true)
 % In one line of code it would have been:
 % ba(ax, Hurley, Nadler, 'PlotDefault', true)
-% But figure 4b in [BA1999] has the vertical axis flipped, so this does not
-% work. Note that there is significant positive Spearman rank correlation
-% between difference and mean, which can be seen in the legend if the
-% 'PlotStatistics', 'basic' Name-Value pair argument is passed to ba, or by
-% looking at the statistics in s, the output argument of s = ba(...).
+% However, figure 4b in [BA1999] has the vertical axis flipped, so this
+% does not work. Note that there is significant positive Spearman rank
+% correlation between difference and mean, which can be seen in the legend
+% if the 'PlotStatistics', 'basic' Name-Value pair argument is passed to
+% ba, or by looking at the statistics in s, the output argument of s =
+% ba(...).
 
 % Print some text output
 fn = f4.Number;
@@ -258,6 +259,7 @@ f = [f5; f6];
 fn = sort([f.Number]);
 disp(['See also figures [', num2str(fn), '].'])
 
+
 %% 3.2 A regression approach for nonuniform differences (article p. 145)
 disp 'Section 3.2 A regression approach for nonuniform differences'
 
@@ -275,8 +277,8 @@ GName = 'Fat (g/100 ml; Gerber)';
 % Figure 7 [BA1999, p. 147] and its subfigures correspond to the following
 % figure and its subplots.
 f7 = figure;
-ax7(1) = subplot(2,1,1);
-ax7(2) = subplot(2,1,2);
+ax7(1) = subplot(2, 1, 1);
+ax7(2) = subplot(2, 1, 2);
 
 % Perform default BAA on the data
 ba(ax7(1), Gerber, Trig, 'XName', GName, 'YName', TName, ...
@@ -293,7 +295,7 @@ f8 = figure;
 % limits of agreement are plotted as well. In the article, the residuals of
 % this regression line are not assumed to be significantly associated with
 % the mean, so the assumption is made the residual variance is constant.
-% This is specified using the 'ConstantResidualVariance',true Name-Value
+% This is specified using the 'ConstantResidualVariance', true Name-Value
 % pair argument. The result of this assumption is the 95% LOA being
 % parallel to the bias regression line.
 stats = ba(f8, Trig, Gerber, 'XName', TName, 'YName', GName, ...
@@ -334,7 +336,7 @@ disp 'Section 5.1 Equal numbers of replicates'
 
 % Perform Bland-Altman Analysis for repeated measurements. Notice the
 % syntax is identical to the regular BAA, but because of the matrix input
-% (check size(J) and size(S)) ba(J,S) performs BAA for repeated
+% (check size(J) and size(S)) ba(J, S) performs BAA for repeated
 % measurements.
 stats = ba(J, S);
 
@@ -354,14 +356,14 @@ display(std)  % [BA1999, p. 152]: 20.95 mmHg
 
 loa = stats.difference.loa;  % Limits of agreement
 display(loa)  % [BA1999, p. 152]: [-56.68, 25.44] mmHg
-% Notice how the values of muD, sD and loa are very similar to those of
+% Notice how the values of bias, std and loa are very similar to those of
 % [BA1999] section 2, which is to be expected (they do not change for
 % repeated measurements).
 
 % Show more results, compare with comments
 biasCI = stats.difference.biasCI;
 display(biasCI)
-% [BA1999]: value not presented, but note similarity to muDCI in section 2
+% [BA1999]: value not presented, but note similarity to biasCI in section 2
 
 loaCI = stats.difference.loaCI;
 display(loaCI)  % [BA1999, p. 153]:
@@ -372,6 +374,7 @@ display(loaCI)  % [BA1999, p. 153]:
 % t-distribution should have been used. This would have resulted in a
 % slightly larger value than 1.96, hence the article's estimation of the
 % confidence intervals of the LOA is too narrow.
+
 
 %% 5.2 Unequal numbers of replicates [BA1999, p. 154]
 disp 'Section 5.2 Unequal numbers of replicates'
@@ -461,7 +464,7 @@ disp(['See also figures [', num2str(fn), '].'])
 disp 'Section 5.3 Replicated data in pairs'
 % Note 1/2:
 % This section is implemented in ba.m based on the [BA2007], because the
-% section in [BA1999] contains an error. [BA2007] article corrects this
+% section in [BA1999] contains an error. The [BA2007] article corrects this
 % error and provides a calculation example with the same data as [BA1999].
 % The numbers calculated below are the numbers from [BA2007, §3, p. 575
 % onwards].
@@ -469,9 +472,9 @@ disp 'Section 5.3 Replicated data in pairs'
 % Note 2/2:
 % In [BA2007] Figure 3 the vertical axis depicts the difference (and this
 % is plotted as well, hence the figure looks a lot like [BA1999] Figure
-% 10). However, the caption mentions the standard deviatino is plotted!
+% 10). However, the caption mentions the standard deviation is plotted!
 % This is incorrect. To plot the difference standard deviation versus the
-% mean specify the 'PlotMeanSD','difference' Name-Value pair.
+% mean specify the 'PlotMeanSD', 'difference' Name-Value pair.
 
 % Perform BAA
 stats = ba(cellRV, cellIC, 'XName', RVName, 'YName', ICName, ...
