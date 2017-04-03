@@ -1,0 +1,3 @@
+[submodule "+submodules/+honeycomb"]
+	path = +submodules/+honeycomb
+	url = git@github.com:erikhuizinga/honeycomb.git

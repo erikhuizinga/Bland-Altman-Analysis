@@ -1,4 +1,7 @@
-function plotC(axC, x, y, doPlotBasicStats, pRhoXY, rhoXY, n, xName, yName)
+function scatterC = plotC(axC, x, y, ...
+    doPlotBasicStats, pRhoXY, rhoXY, n, ...
+    xName, yName, ...
+    scatterName)
 % Create correlation plot of observations not accounting for repeated
 % measurements
 
@@ -7,9 +10,16 @@ axes(axC)
 legEntries = gobjects(0);
 
 % Plot y against x
-sC = scatter(x, y);
-sC.ZData = 1 : n;
-sC.UserData = dcStruct([], 'M1', 'M2', 'j', [], @dcXYZ);
+scatterFunction = getScatterFunction(scatterName);
+scatterC = scatterFunction(x, y);
+if strcmpi(scatterName, 'scatter')
+    scatterC.ZData = 1 : n;
+    scatterC.UserData = dcStruct([], 'M1', 'M2', 'j', [], @dcXYZ);
+    
+else
+    bar = colorbar;
+    ylabel(bar, 'counts', 'Rotation', -90, 'VerticalAlignment', 'bottom')
+end
 
 if doPlotBasicStats
     % Add correlation to legend
@@ -22,8 +32,8 @@ if doPlotBasicStats
         strPRhoXY = sprintf('\\itp\\rm = %.2f', pRhoXY);
     end
     
-    sC.DisplayName = sprintf('\\rho = %.2f (%s)', rhoXY, strPRhoXY);
-    legEntries(end + 1) = sC;
+    scatterC.DisplayName = sprintf('\\rho = %.2f (%s)', rhoXY, strPRhoXY);
+    legEntries(end + 1) = scatterC;
 end
 
 % Add y = x reference line
@@ -37,8 +47,12 @@ legEntries(end + 1) = eqLine;
 % Add axes labels
 xlabel('M_1')
 ylabel('M_2')
-title(sprintf(['Scatter plot of (%u observation pairs):\n' ...
-               ' \\rm\\itM_1\\rm: %s, \\itM_2\\rm: %s'], n, xName, yName))
+scatterName = lower(scatterName);
+scatterName(1) = upper(scatterName(1));
+title(sprintf([scatterName, ' plot of ' ...
+               '(%u observation pairs):\n' ...
+               ' \\rm\\itM_1\\rm: %s, \\itM_2\\rm: %s'], ...
+               n, xName, yName))
 
 % Add legend
 legend(legEntries, 'Location', 'SouthEast')

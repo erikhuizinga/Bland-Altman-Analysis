@@ -3,7 +3,8 @@ function varargout = baa(x, xName, y, yName, a, ...
                          doPlotMSD1, axMSD1, doPlotMSD2, axMSD2, ...
                          doPlotC, axC, doPlotBasicStats, ...
                          doPlotExtendedStats, doPlotRegStats, ...
-                         doConstantRegression, doRepeated, assumeCTV)
+                         doConstantRegression, doRepeated, assumeCTV, ...
+                         scatterName)
 
 
 %% Prepare
@@ -103,26 +104,33 @@ end
 %% Create graphics
 % Create correlation plot
 if doPlotC
-    plotC(axC, X, Y, doPlotBasicStats, pRhoXY, rhoXY, sum(m), xName, yName)
+    scatterC = plotC( ...
+        axC, X, Y, ...
+        doPlotBasicStats, pRhoXY, rhoXY, sum(m), ...
+        xName, yName, ...
+        scatterName);
 end
 
 
 % Create mean-difference plot
 if doPlotMD
-    plotM(axMD, muXY, D, 'difference', 'D', 0, doPlotBasicStats, ...
+    scatterMD = plotM( ...
+          axMD, muXY, D, 'difference', 'D', 0, doPlotBasicStats, ...
           loaDCI, pRSMuD, rSMuD, loaD, a, z, muD, muDCI, ...
           doPlotExtendedStats, eLoaD, eMuD, '-', n, xName, yName, ...
           doPlotRegStats, polyMuXYD, msePolyMuXYD, polyLLoaD, ...
-          polyULoaD, doConstantRegression, m)
+          polyULoaD, doConstantRegression, m, scatterName);
 end
 
 
 % Create mean-ratio plot
 if doPlotMR
-    plotM(axMR, muXY, R, 'ratio', 'R', 1, doPlotBasicStats, loaRCI, ...
+    scatterMR = plotM( ...
+          axMR, muXY, R, 'ratio', 'R', 1, doPlotBasicStats, loaRCI, ...
           pRSMuR, rSMuR, loaR, a, z, muR, muRCI, doPlotExtendedStats, ...
           eLoaR,eMuR, '/', n, xName, yName, doPlotRegStats, polyMuXYR, ...
-          msePolyMuXYR, polyLLoaR, polyULoaR, doConstantRegression, m)
+          msePolyMuXYR, polyLLoaR, polyULoaR, doConstantRegression, m, ...
+          scatterName);
 end
 
 
@@ -141,11 +149,12 @@ if doPlotMSD1
     end
     
     % Create mean-SD plot 1
-    plotM(axMSD1, muMSD1, sMSD1, 'standard deviation', SDString1, NaN, ...
+    scatterMSD1 = plotM( ...
+          axMSD1, muMSD1, sMSD1, 'standard deviation', SDString1, NaN, ...
           doPlotBasicStats, [], pRMSD1,rMSD1, [], [], [], [], [], ...
           doPlotExtendedStats, [], [], 'std', n, xNameMSD1, [], ...
           doPlotRegStats, polyMSD1, msePolyMSD1, polyLLoaMSD1, ...
-          polyULoaMSD1, doConstantRegression, m)
+          polyULoaMSD1, doConstantRegression, m, scatterName);
 end
 
 
@@ -164,11 +173,12 @@ if doPlotMSD2
     end
     
     % Create mean-SD plot 2
-    plotM(axMSD2, muMSD2, sMSD2, 'standard deviation', SDString2, NaN, ...
+    scatterMSD2 = plotM( ...
+          axMSD2, muMSD2, sMSD2, 'standard deviation', SDString2, NaN, ...
           doPlotBasicStats, [], pRMSD2, rMSD2, [], [], [], [], [], ...
           doPlotExtendedStats, [], [], 'std', n, xNameMSD2, [], ...
           doPlotRegStats, polyMSD2, msePolyMSD2, polyLLoaMSD2, ...
-          polyULoaMSD2, doConstantRegression, m)
+          polyULoaMSD2, doConstantRegression, m, scatterName);
 end
 
 
@@ -211,6 +221,7 @@ if doPlotMR
     out.ratio.poly.mse = msePolyMuXYR;
     out.ratio.poly.stde = sResPolyMuXYR;
     out.ratio.poly.loa = [polyLLoaR.', polyULoaR.'];
+    out.graphics.ratio.handle = scatterMR;  % handle to scatter object
 end
 
 
@@ -220,6 +231,7 @@ if doPlotC
     out.xy.Pearson.p = pRhoXY;  % p-value of rhoXY
     out.xy.poly.xy = polyXY;  % simple linear regression of y on x
     out.xy.poly.mse = msePXY;  % MSE of the regression
+    out.graphics.xy.handle = scatterC;  % handle to scatter object
 end
 
 
@@ -238,6 +250,18 @@ if doRepeated
     out.N = sum(m);  % total number of observations
 end
 
+
+% Set remaining graphic outputs
+if doPlotMD
+    out.grahpics.difference.handle = scatterMD;
+end
+if doPlotMSD1
+    if doPlotMSD2
+        out.grahpics.std.handle = [scatterMSD1; scatterMSD2];
+    else
+        out.graphics.std.handle = scatterMSD1;
+    end
+end
 
 % Set final output
 varargout = {{out}};

@@ -147,6 +147,15 @@ function varargout = ba(varargin)
 %   specifying the optional output argument adds the correlation field to
 %   the output argument.
 %
+%   'PlotHoneycomb': Create honeycomb plots instead of scatter plots
+%   false (default) | true
+%   Create honeycomb plots (2D histogram with hexagonal bins) instead of
+%   scatter plots in all graphs with scattered data if the specified value
+%   is true. The number of honeycomb plots depends on the specified plots
+%   to create using other Name-Value pair arguments. More information about
+%   the honeycomb plot can be found here:
+%   http://mathworks.com/matlabcentral/fileexchange/62355-honeycomb
+%
 %   'PlotStatistics': Add statistics to the created plots
 %   'none' (default) | 'basic' | 'extended'
 %   Add statistics to the created plots, specified as 'none', 'basic',
@@ -414,6 +423,7 @@ p.addParameter('ConstantResidualVariance', false, @validatelogical)
 p.addParameter('ConstantTrueValue', true, @validatelogical)
 p.addParameter('Transform', @(x) x, ...
                @(f) isa(f,'function_handle') | ischar(f))
+p.addParameter('PlotHoneycomb', false, @validatelogical);
 
 % Parse inputs
 parse(p, in{:})
@@ -514,6 +524,14 @@ end
 assumeCTV = logical(ConstantTrueValue);
 
 
+% Determine scatter plot function
+if PlotHoneycomb
+    scatterName = 'honeycomb';
+else
+    scatterName = 'scatter';
+end
+
+
 %% Perform Bland-Altman analysis
 out = baa( ...  % baa: Bland-Altman Analysis
            xok, xName, yok, yName, a, ...
@@ -523,7 +541,8 @@ out = baa( ...  % baa: Bland-Altman Analysis
            doPlotC, axC, ...
            doPlotBasicStats, doPlotExtendedStats, ...
            doPlotRegStats, doConstantRegression, ...
-           doRepeated, assumeCTV);
+           doRepeated, assumeCTV, ...
+           scatterName);
 
 
 %% Set output

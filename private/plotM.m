@@ -1,8 +1,9 @@
-function plotM(axMY, x, y, sMYLongName, sMYName, y0, doPlotBasicStats, ...
+function scatterM = plotM( ...
+               axMY, x, y, sMYLongName, sMYName, y0, doPlotBasicStats, ...
                loaCI, pRSMuY, rSMuY, loa, a, z, muY, muYCI, ...
                doPlotExtendedStats, eLoa, eMuY, strYFun, n, xName, ...
                yName, doPlotRegStats, polyXY, msePXY, polyLLoa, ...
-               polyULoa, doConReg, m)
+               polyULoa, doConReg, m, scatterName)
 % Create mean-statistic plot, y referring to the statistic
 
 % Determine if mean-SD plot
@@ -17,16 +18,24 @@ N = sum(m); % number of observation pairs
 
 
 % Create mean-y plot
-sM = scatter(x, y);
-sM.ZData = 1 : n;
-UserData = dcStruct([], 'µ', sMYName, 'i', [], @dcXYZ); %TODO check µ
+scatterFunction = getScatterFunction(scatterName);
+scatterM = scatterFunction(x, y);
+if strcmpi(scatterName, 'scatter')
+    scatterM.ZData = 1 : n;
+    UserData = dcStruct([], 'µ', sMYName, 'i', [], @dcXYZ); %TODO check µ
+    
+else
+    bar = colorbar;
+    ylabel(bar, 'counts', 'Rotation', -90, 'VerticalAlignment', 'bottom')
+    UserData = struct.empty;
+end
 
 if any(m > 1)  % Handle repeated measurements
-    sM.UserData{1} = UserData;
-    sM.UserData{2} = m;
+    scatterM.UserData{1} = UserData;
+    scatterM.UserData{2} = m;
     
 else  % Handle no repeated measurements
-    sM.UserData = UserData;
+    scatterM.UserData = UserData;
 end
 
 xl = xlim;
@@ -59,8 +68,8 @@ if doPlotBasicStats
     else
         strPRSMuD = sprintf('\\itp\\rm = %.2g', pRSMuY);
     end
-    sM.DisplayName = sprintf('\\itr_s\\rm = %.2f (%s)', rSMuY, strPRSMuD);
-    legEntries(end + 1) = sM;
+    scatterM.DisplayName = sprintf('\\itr_s\\rm = %.2f (%s)', rSMuY, strPRSMuD);
+    legEntries(end + 1) = scatterM;
     
     if ~doPlotRegStats && ~doMSD
         % Adjust y limits
