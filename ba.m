@@ -9,7 +9,7 @@ function varargout = ba(varargin)
 %   Syntax
 %   stats = BA(x, y) performs Bland-Altman Analysis (BAA) on x and y, which
 %   are data from two measurement methods for the same quantity
-%   respectively. x and y can be of various classes and shapes:
+%   respectively. x and y can be of various classes and dimensions:
 %    - If x and y are vectors, regular BAA is performed. Every element in x
 %      corresponds to the element in y at the same index. These pairs are
 %      individual observations on individual subjects.
@@ -31,22 +31,22 @@ function varargout = ba(varargin)
 %   0.05 is used by default to calculate 95% limits of agreement and
 %   confidence intervals.
 %
-%   stats = BA(__, Name, Value) specifies additional options using one or
+%   stats = BA(... , Name, Value) specifies additional options using one or
 %   more Name-Value pair arguments, in addition to any of the input
 %   arguments in the previous syntaxes. For example, you can specify to
-%   create the mean-difference plot using the 'PlotMeanDifference'
+%   create the mean-difference plot using the 'PlotMeanDifference', true
 %   Name-Value pair argument.
 %
-%   BA(__) can be used to create graphs without returning an output
+%   BA(...) can be used to create graphs without returning an output
 %   argument.
 %
-%   __ = BA(f, __) specifies the figure(s) f in which to create the graphs
-%   specified with the corresponding Name-Value pairs. The number of
+%   ... = BA(f, ...) specifies the figure(s) f in which to create the
+%   graphs specified with the corresponding Name-Value pairs. The number of
 %   figures in f must equal one or the number of specified plots. If f is
 %   the handle to only one figure, a number of subplots is created in the
 %   figure equal to the number of graphs requested.
 %
-%   __ = BA(ax, __) specifies the (array of) axes in which to create the
+%   ... = BA(ax, ...) specifies the (array of) axes in which to create the
 %   requested graphs with the corresponding Name-Value pairs. The number of
 %   axes in ax must equal the number of graphs requested.
 %
@@ -82,7 +82,7 @@ function varargout = ba(varargin)
 %   are done or graphs are created.
 %   Example: 'Exclude', [1, 3, 4] excludes rows 1, 3 and 4 from x and y.
 %   Example: 'Exclude', [0 0 1 0 1 1 0 0 1] excludes the true rows from
-%   x and y. Note the logical vector needs not be a column vector.
+%   x and y. Note that the logical vector needs not be a column vector.
 %
 %   'Transform': Function to transform data with
 %   @(x) x (default) | function handle
@@ -110,8 +110,8 @@ function varargout = ba(varargin)
 %   Create the mean-ratio graph if the specified value is true. The
 %   mean-ratio graph is a scatter plot of the ratio between observations
 %   versus their mean. If the mean-ratio graph is created and an output
-%   arguments is specified, the output argument contains a field called
-%   ratio with the ratio statistics.
+%   argument is specified, the output argument contains a field called
+%   ratio containing the ratio statistics.
 %   
 %   'PlotMeanSD': Create mean-standard deviation graph
 %   false (default) | true | string
@@ -122,19 +122,20 @@ function varargout = ba(varargin)
 %   below. The standard deviation of the difference, ratio or of x and y
 %   can be plotted. If the standard deviations of x and y are plotted, two
 %   axes are required. The following values are allowed:
-%   true | 'difference' | 'single' | 'joint': plot the standard deviation
-%   of the difference versus the mean.
-%   'ratio': plot the standard deviation of the ratio versus the mean.
-%   'input' | 'both' | 'separate': plot the standard deviation of x and y
-%   in separate axes versus the mean.
-%   false (default) | 'none': no mean-standard deviation graph is created.
+%    - true | 'difference' | 'single' | 'joint': plot the standard
+%      deviation of the difference versus the mean.
+%    - 'ratio': plot the standard deviation of the ratio versus the mean.
+%    - 'input' | 'both' | 'separate': plot the standard deviation of x and
+%      y in separate axes versus the mean.
+%    - false (default) | 'none': no mean-standard deviation graph is
+%      created. 
 %
 %   'PlotCorrelation': Create correlation graph
 %   false (default) | true
 %   Create the correlation graph if the specified value is true. The
 %   correlation graph is a scatter plot of x and y. If the correlation
-%   graph is created and an output arguments is specified, the output
-%   argument contains a field called correlation with the correlation
+%   graph is created and an output argument is specified, the output
+%   argument contains a field called xy with the correlation
 %   statistics.
 %
 %   'PlotDefault': Create default graphs
@@ -157,25 +158,28 @@ function varargout = ba(varargin)
 %   http://mathworks.com/matlabcentral/fileexchange/62355-honeycomb
 %
 %   'PlotStatistics': Add statistics to the created plots
-%   'none' (default) | 'basic' | 'extended'
+%   'none' (default) | 'basic' | 'extended' | 'regression'
 %   Add statistics to the created plots, specified as 'none', 'basic',
-%   'extended' or 'regression'. 'none' specifies no statistics to be added
-%   to the graphs. 'basic' specifies a basic set of statistics to add.
-%   'extended' adds a more extended set of statistics. 'regression' adds
-%   regression lines to the graphs.The following statistics are added to
-%   the plots. The basic set adds labelled lines for the limits of
-%   agreement to the mean-statistic graphs. It also adds the Spearman rank
-%   correlation coefficient to the legend of these graphs. Furthermore, the
-%   Pearson correlation coefficient is added to the legend of the
-%   correlation plot. The extended set adds the statistics of the basic
-%   set. Additionally, the confidence intervals of the bias and limits of
-%   agreement are plotted as error bars in the mean-statistic graphs. The
-%   extended set does not add statistics other than the basic set to the
-%   correlation plot. The regression statistics comprise of the extended
-%   set, except that the bias and limits of agreement lines are no longer
-%   constant with respect to the mean. The variable on the vertical axis is
-%   regressed on the mean, resulting in the possibility of non-constant
-%   lines. If no plots are created, the 'PlotStatistics' value is ignored.
+%   'extended' or 'regression'. 'none' specifies no statistics are to be
+%   added to the graphs. 'basic' specifies a basic set of statistics to
+%   add. 'extended' adds a more extended set of statistics. 'regression'
+%   adds regression lines to the graphs. The following statistics are added
+%   to the plots.
+%    - The basic set adds labelled lines for the limits of agreement to the
+%      mean-statistic graphs. It also adds the Spearman rank correlation
+%      coefficient to the legend of these graphs. Furthermore, the Pearson
+%      correlation coefficient is added to the legend of the correlation
+%      graph.
+%    - The extended set adds the statistics of the basic set. Additionally,
+%      the confidence intervals of the bias and limits of agreement are
+%      plotted as error bars in the mean-statistic graphs. The extended set
+%      does not add statistics other than the basic set to the correlation
+%      graph.
+%    - The regression statistics comprise of the extended set, except that
+%      the bias and limits of agreement lines are no longer constant with
+%      respect to the mean. The variable on the vertical axis is regressed
+%      on the mean, resulting in the possibility of non-constant lines.
+%   If no plots are created, the 'PlotStatistics' value is ignored.
 %
 %   'ConstantResidualVariance': Assume constant residual variance
 %   false (default) | true
@@ -205,16 +209,17 @@ function varargout = ba(varargin)
 %   The only output argument, stats, is optional. It is a scalar structure
 %   containing multiple fields with descriptive statistics about the
 %   agreement of x and y. The number of fields in stats varies depending on
-%   the input arguments. By default stats contains fields difference, xy
-%   and n. Additional fields in stats are ratio, m and N. They exist
-%   depending on the requested graphs and the input data. If the mean-ratio
-%   graph is requested using the 'PlotMeanRatio' Name-Value pair argument,
-%   then stats is returned with the ratio field. If BAA for repeated
-%   measurements is performed, the m field is returned in stats. If the
-%   correlation plot is requested using the 'PlotCorrelation' Name-Value
-%   pair argument, then stats is returned with additional fields in the xy
-%   field. Note that the difference field is returned regardless of the
-%   'PlotMeanDifference' Name-Value pair argument.
+%   the input arguments. By default, stats contains fields difference, xy
+%   and n. Additional fields in stats are ratio, graphics, m and N. They
+%   exist depending on the requested graphs and the input data. If the
+%   mean-ratio graph is requested using the 'PlotMeanRatio' Name-Value pair
+%   argument, then stats is returned with the ratio field. If BAA for
+%   repeated measurements is performed, the m and N fields are returned in
+%   stats. If the correlation graph is requested using the
+%   'PlotCorrelation' Name-Value pair argument, then stats is returned with
+%   additional fields in the xy field. Note that the difference field is
+%   returned regardless of the 'PlotMeanDifference' Name-Value pair
+%   argument.
 %
 %   Fields difference and ratio are described together below, after which
 %   field xy is described.
@@ -233,22 +238,22 @@ function varargout = ba(varargin)
 %   Example: stats.ratio.biasCI is the confidence interval of the mean
 %   ratio.
 %
-%   loa: the 95% (default, depending on alpha) limits of agreement, a 2
-%   element vector. The first element is the lower limit of agreement, the
-%   second is the upper.
+%   loa: the 95% (default, depending on alpha) limits of agreement, a
+%   two-element vector. The first element is the lower limit of agreement,
+%   the second is the upper.
 %   Example: stats.difference.loa(1) is the lower limit of agreement of the
 %   differences.
 %
 %   loaCI: the 95% (default, depending on alpha) confidence interval of the
-%   limits of agreement, a 2x2 matrix. The first column corresponds to
+%   limits of agreement, a 2x2 matrix. The first column corresponds to the
 %   lower limit of agreement, the second to the upper limit. The first and
 %   second row correspond to the lower and upper confidence interval bound
 %   respectively.
-%   Ecample: stats.ratio.loaCI(:, 2) is the confidence interval of the
+%   Example: stats.ratio.loaCI(:, 2) is the confidence interval of the
 %   upper limit of agreement of the ratios.
 %
-%   sts: the standard deviation of the statistic.
-%   Example: stats.difference.sts is the standard deviation of the
+%   std: the standard deviation of the statistic.
+%   Example: stats.difference.std is the standard deviation of the
 %   differences.
 % 
 %   D: the differences used in the calculations. For the ratio field, this
@@ -284,10 +289,10 @@ function varargout = ba(varargin)
 %   calculated in BAA. It contains the following fields:
 %
 %   x: the x values used in the calculations. They are the values used
-%   after preparation and exclusion of invalid samples of input x.
+%   after preparation and exclusion of invalid samples in input x.
 %
 %   y: the y values used in the calculations. They are the values used
-%   after preparation and exclusion of invalid samples of input y.
+%   after preparation and exclusion of invalid samples in input y.
 % 
 %   mu: the mean values of the inputs used in the calculations and in the
 %   plots.
@@ -300,11 +305,10 @@ function varargout = ba(varargin)
 %   
 %   In the repeated measurements case, the variance within each subject may
 %   be nonzero. The xy.varw.x and xy.varw.y fields are returned then too,
-%   which are the within-subject variances.
-%   Example: stats.xy.varw.x is the within-subject variance of input x.
+%   which are the within-subject variances of x and y respectively.
 %
 %   If the correlation graph is created, stats contains additional fields
-%   with some correlation statistics.
+%   with some correlation statistics in `xy`.
 %
 %   xy.Pearson.rho: the Pearson correlation coefficient between inputs x
 %   and y.
@@ -327,7 +331,7 @@ function varargout = ba(varargin)
 %   One of these assumptions is that the individual observation pairs are
 %   independent. This is the case when every observed pair comes from a
 %   different subject. However, when multiple measurements are taken on the
-%   same individual, this assumption migtht not hold. The measurements on
+%   same individual, this assumption might not hold. The measurements on
 %   the same individual might depend on each other. For example, a
 %   subject's blood pressure is measured every minute using a
 %   sphygmomanometer. The observations of every minute will be quite
