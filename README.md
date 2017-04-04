@@ -9,7 +9,7 @@ Bland-Altman Analysis is a statistical method published by J. Martin Bland and D
  - If `x` and `y` are matrices, BAA for repeated measurements is performed. This means multiple measurements have been acquired per subject. The number of elements in `x` and `y` must be equal. Every row of `x` and `y` corresponds to the subjects, every column to the repeated observations.
 For more information about BAA for repeated measurements, see section Bland-Altman Analysis for repeated measurements below. The calculations are done at a significance level of `alpha = 0.05`. Output `stats` is a structure containing multiple fields with descriptive statistics about the agreement of `x` and `y`. For more details on `stats` see section [Output](#output) below.
 
-`stats = ba(x, y, alpha)` specifies the significance level to calculate the limits of agreement and confidence intervals with. `alpha` must be a scalar in the interval [0, 1]. If `alpha` is not specified a value of 0.05 is used by default to calculate 95% limits of agreement and confidence intervals.
+`stats = ba(x, y, alpha)` specifies the significance level to calculate the limits of agreement and confidence intervals with. `alpha` must be a scalar in the interval `[0, 1]`. If `alpha` is not specified a value of 0.05 is used by default to calculate 95% limits of agreement and confidence intervals.
 
 `stats = ba(... , Name, Value)` specifies additional options using one or more Name-Value pair arguments, in addition to any of the input arguments in the previous syntaxes. For example, you can specify to create the mean-difference plot using the `'PlotMeanDifference', true` name-value pair argument.
 
