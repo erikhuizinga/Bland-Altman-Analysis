@@ -7,11 +7,11 @@ Bland-Altman Analysis is a statistical method published by J. Martin Bland and D
 `stats = ba(x, y)` performs Bland-Altman Analysis on `x` and `y`, which are data from two measurement methods for the same quantity respectively. `x` and `y` can be of various classes and dimensions:
  - If `x` and `y` are vectors, regular BAA is performed. Every element in `x` corresponds to the element in `y` at the same index. These pairs are individual observations on individual subjects.
  - If `x` and `y` are matrices, BAA for repeated measurements is performed. This means multiple measurements have been acquired per subject. The number of elements in `x` and `y` must be equal. Every row of `x` and `y` corresponds to the subjects, every column to the repeated observations.
-For more information about BAA for repeated measurements, see section Bland-Altman Analysis for repeated measurements below. The calculations are done at a significance level of `alpha = 0.05`. Output `stats` is a structure containing multiple fields with descriptive statistics about the agreement of `x` and `y`. For more details on `stats` see section Output below.
+For more information about BAA for repeated measurements, see section Bland-Altman Analysis for repeated measurements below. The calculations are done at a significance level of `alpha = 0.05`. Output `stats` is a structure containing multiple fields with descriptive statistics about the agreement of `x` and `y`. For more details on `stats` see section [Output](#output) below.
 
 `stats = ba(x, y, alpha)` specifies the significance level to calculate the limits of agreement and confidence intervals with. `alpha` must be a scalar in the interval [0, 1]. If `alpha` is not specified a value of 0.05 is used by default to calculate 95% limits of agreement and confidence intervals.
 
-`stats = ba(... , Name, Value) specifies additional options using one or more Name-Value pair arguments, in addition to any of the input arguments in the previous syntaxes. For example, you can specify to create the mean-difference plot using the `'PlotMeanDifference', true` name-value pair argument.
+`stats = ba(... , Name, Value)` specifies additional options using one or more Name-Value pair arguments, in addition to any of the input arguments in the previous syntaxes. For example, you can specify to create the mean-difference plot using the `'PlotMeanDifference', true` name-value pair argument.
 
 `ba(...)` can be used to plot the data without returning an output argument.
 
@@ -54,7 +54,7 @@ Example: `'Exclude', [0 0 1 0 1 1 0 0 1]` excludes the `true` elements from `x` 
 ### `'Transform'`: Function to transform data with
 `@(x) x` (default) | function handle
 
-Function to transform data with before further analysis, specified as a function handle of one variable. By default, no transformation is performed. The function handle should accept a vector input. Bland and Altman suggest in their 1999 article (see p. 144) only the logarithmic transformation should be used, i.e. specify ``'Transform', @log`. Other transforms are not easily relatable to the actual measurements, hence their recommendation. Note that no backtransformation is performed on the statistics in the optional output argument, i.e. they are the transformed statistics.
+Function to transform data with before further analysis, specified as a function handle of one variable. By default, no transformation is performed. The function handle should accept a vector input. Bland and Altman suggest in their 1999 article (see p. 144) only the logarithmic transformation should be used, i.e. specify `'Transform', @log`. Other transforms are not easily relatable to the actual measurements, hence their recommendation. Note that no backtransformation is performed on the statistics in the optional output argument, i.e. they are the transformed statistics.
 
 Example: `'Transform', @log` transforms `x` to `log(x)` and `y` to `log(y)`.
 
@@ -107,7 +107,7 @@ If no plots are created, the `'PlotStatistics'` value is ignored.
 
 Assume constant residual variance in the simple linear regression performed if the `'PlotStatistics', 'regression'` Name-Value pair argument is specified. This means the upper and lower limits of agreement lines will have the same slope as the bias line. This assumption holds if the slope of the upper and lower limits of agreement do not differ significantly from the slope of the bias regression line.
 
-### 'ConstantTrueValue': Assume the true value is constant
+### `'ConstantTrueValue'`: Assume the true value is constant
 `true` (default) | `false`
 
 Assume the true value being measured by `x` and `y` is constant. This assumption is true for repeated measurements of the same constant quantity. For example, repeated measurements of a subject's blood pressure within the same minute could be assumed to be constant. If this is to be assumed in the calculations, specify the `'ConstantTrueValue', true` pair argument. If the repeated measurements are of a quantity that changes from measurement to measurement, this assumption does not hold. For example, blood pressure measured on multiple occasions throughout a day is expected to change over time, hence over repeated measurements as well. If a varying true value is assumed, specify the `'ConstantTrueValue', false` pair argument.
@@ -135,7 +135,7 @@ The `xy` field of `stats` contains statistics about the inputs `x` and `y` that 
  - `y` the `y` values used in the calculations. They are the values used after preparation and exclusion of invalid samples in input `y`.
  - `mu` the mean values of the inputs used in the calculations and in the plots.
 
-The `n` field contains the number of subjects. In BAA for repeated measurements (see also the section below) this differs from the number of observations in inputs `x` and `y`. In that case the `m` and `N` fields are also returned. `m` contains the number of observations per subject in `x` and `y`, `N` is the total number of observations.
+The `n` field contains the number of subjects. In BAA for repeated measurements (see also [the section below](#bland-altman-analysis-for-repeated-measurements)) this differs from the number of observations in inputs `x` and `y`. In that case the `m` and `N` fields are also returned. `m` contains the number of observations per subject in `x` and `y`, `N` is the total number of observations.
 
 In the repeated measurements case, the variance within each subject may be nonzero. The `xy.varw.x` and `xy.varw.y` field are returned then too, which are the within-subject variances of `x` and `y` respectively.
 
