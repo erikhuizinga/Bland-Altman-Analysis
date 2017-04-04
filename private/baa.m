@@ -221,7 +221,7 @@ if doPlotMR
     out.ratio.poly.mse = msePolyMuXYR;
     out.ratio.poly.stde = sResPolyMuXYR;
     out.ratio.poly.loa = [polyLLoaR.', polyULoaR.'];
-    out.graphics.ratio.handle = scatterMR;  % handle to scatter object
+    out.graphics.ratio = scatterMR;  % handle to scatter object
 end
 
 
@@ -231,7 +231,7 @@ if doPlotC
     out.xy.Pearson.p = pRhoXY;  % p-value of rhoXY
     out.xy.poly.xy = polyXY;  % simple linear regression of y on x
     out.xy.poly.mse = msePXY;  % MSE of the regression
-    out.graphics.xy.handle = scatterC;  % handle to scatter object
+    out.graphics.xy = scatterC;  % handle to scatter object
 end
 
 
@@ -253,13 +253,13 @@ end
 
 % Set remaining graphic outputs
 if doPlotMD
-    out.grahpics.difference.handle = scatterMD;
+    out.graphics.difference = scatterMD;  % handle to scatter object
 end
 if doPlotMSD1
     if doPlotMSD2
-        out.grahpics.std.handle = [scatterMSD1; scatterMSD2];
+        out.graphics.std = [scatterMSD1; scatterMSD2];
     else
-        out.graphics.std.handle = scatterMSD1;
+        out.graphics.std = scatterMSD1;
     end
 end
 
