@@ -17,17 +17,20 @@ strP = num2str(100 * (1 - a));
 N = sum(m); % number of observation pairs
 
 
+% Determine if honeycomb plot
+isHoneycomb = strcmpi(scatterName, 'honeycomb');
+
 % Create mean-y plot
 scatterFunction = getScatterFunction(scatterName);
 scatterM = scatterFunction(x, y);
-if strcmpi(scatterName, 'scatter')
-    scatterM.ZData = 1 : n;
-    UserData = dcStruct([], 'µ', sMYName, 'i', [], @dcXYZ); %TODO check µ
-    
-else
+if isHoneycomb
     bar = colorbar;
     ylabel(bar, 'counts', 'Rotation', -90, 'VerticalAlignment', 'bottom')
     UserData = struct.empty;
+    
+else
+    scatterM.ZData = 1 : n;
+    UserData = dcStruct([], 'µ', sMYName, 'i', [], @dcXYZ); %TODO check µ
 end
 
 if any(m > 1)  % Handle repeated measurements
@@ -46,7 +49,7 @@ padding = range(yl)/20;  % Add a distance to enhance visibility
 % Add line of equality
 if ~doMSD
     line0 = refline(0, y0);
-    line0.Color = [.75, .75, .75];
+    line0.Color = [getLineColor(scatterName), .5];
     line0.LineStyle = '--';
     line0.DisplayName = 'line of equality';
     line0.UserData = dcStruct('M1 = M2', [], [], [], [], @dcXYZ);
@@ -81,7 +84,7 @@ if doPlotBasicStats
         
         % Add lower LOA line
         lineLLoa = refline(0, loa(1));
-        lineLLoa.Color = 'k';
+        lineLLoa.Color = getLineColor(scatterName);
         lineLLoa.UserData = dcStruct([], [], ...
                                      sprintf('lower %s%% LOA', strP), ...
                                      [], [strP, '% CI = [', ...
@@ -95,7 +98,7 @@ if doPlotBasicStats
         
         % Add upper LOA line
         lineULoa = refline(0, loa(2));
-        lineULoa.Color = 'k';
+        lineULoa.Color = getLineColor(scatterName);
         lineULoa.UserData = dcStruct([], [], ...
                                      sprintf('upper %s%% LOA', strP), ...
                                      [], [strP, '% CI = [', ...
@@ -109,7 +112,7 @@ if doPlotBasicStats
         
         % Add mean Y line
         muYLine = refline(0, muY);
-        muYLine.Color = 'k';
+        muYLine.Color = getLineColor(scatterName);
         text(xl(2) - padding/2, muY + padding/2, ...
              sprintf('$\\overline{%s}=%s$', sMYName, num2str(muY)), ...
              'Interpreter', 'latex', 'HorizontalAlignment','right')
@@ -154,7 +157,7 @@ if doPlotRegStats
     % Add mean statistic regression line
     yRegXY = polyval(polyXY, xlim);
     regLine = line(xlim, yRegXY);
-    regLine.Color = 'k';
+    regLine.Color = getLineColor(scatterName);
     regLine.DisplayName = sprintf('regression with %s%% LOA', strP);
     regLine.UserData = dcStruct( ...
         sprintf('f_bias(µ) = %s×µ + %s', ...  %TODO check × (times) and µ
@@ -170,7 +173,7 @@ if doPlotRegStats
     % Add lower LOA line
     yLLoa = polyval(polyLLoa, xlim);
     regLineLLoa = line(xlim, yLLoa);
-    regLineLLoa.Color = 'k';
+    regLineLLoa.Color = getLineColor(scatterName);
     if doConReg
         strLoaFun = sprintf('s_{\\varepsilon}');
         
@@ -185,7 +188,7 @@ if doPlotRegStats
     % Add upper LOA line
     yULoa = polyval(polyULoa, xlim);
     regLineULoa = line(xlim, yULoa);
-    regLineULoa.Color = 'k';
+    regLineULoa.Color = getLineColor(scatterName);
     regLineULoa.UserData = dcStruct( ...
         sprintf('f_upper(µ) = %s×µ + %s', ...  %TODO check × (times) and µ
         num2str(polyULoa(1)), num2str(polyULoa(2))), ...
@@ -250,7 +253,9 @@ if ~isempty(legEntries)
 end
 
 % Reorder plot children
-axMY.Children = axMY.Children([end, 1 : end-1]);
+if ~isHoneycomb
+    axMY.Children = axMY.Children([end, 1 : end-1]);
+end
 
 % Set outer position of axes
 setOP(axMY)

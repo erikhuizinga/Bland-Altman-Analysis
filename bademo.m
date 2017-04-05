@@ -2,7 +2,7 @@
 %   Erik Huizinga based on the methods by Bland and Altman 1983, 1986, 1999
 %   and 2007. The references below are used throughout this demo script.
 %
-%% References
+% References in the comments of the code
 % [BA1999] Bland, J.M., and Altman, D.G. 1999. Measuring agreement in method comparison studies. Statistical Methods in Medical Research 8: 135-160. doi:10.1191/096228099673819272.
 % [BA2007] Bland, J.M., and Altman, D.G. 2007. Agreement Between Methods of Measurement with Multiple Observations Per Individual. Journal of Biopharmaceutical Statistics 17: 571-582. doi:10.1080/10543400701329422.
 % [BSOCA1993] Bowling, L.S., Sageman, W.S., O’Connor, S.M., Cole, R., and Amundson, D.E. 1993. Lack of agreement between measurement of ejection fraction by impedance cardiography versus radionuclide ventriculography. Critical Care Medicine 21: 1523–1527.
@@ -496,15 +496,33 @@ display(loa)  % [BA2007]: [-1.3394565, 2.5437899]
 %% Demonstrate other functionality
 % Create honeycomb plot (2D histogram with hexagonal bins) instead of
 % regular scatter plot
-stats = ba( ...
+f_11_12 = figures(2);
+stats = ba( f_11_12, ...
     J1, S1, 'XName', JName, 'YName', SName, ...
-    'PlotCorrelation', true, ...
-    'PlotHoneycomb', true);
-honeyHandle1 = stats.graphics.xy;
+    'PlotDefault', true, ...
+    'PlotHoneycomb', true, ...
+    'PlotStatistics', 'extended');
 
-stats = ba( ...
-    J1, S1, 'XName', JName, 'YName', SName, ...
-    'PlotMeanDifference', true, ...
-    'PlotStatistics', 'basic', ...
-    'PlotHoneycomb', true);
+% Get the handles of the honeycomb patch objects
+honeyHandle1 = stats.graphics.xy;
 honeyHandle2 = stats.graphics.difference;
+
+
+% Adjust honeycomb plot 1
+honeyHandle1.EdgeColor = 'none';
+
+
+% Adjust honeycomb plot 2
+% Create color map from white to blue
+map = lines;
+map = map(1, :);
+map = interp1([1, 0], [map; 1, 1, 1], linspace(0, 1, 256));
+
+% Set color map
+honeyHandle2.EdgeColor = map(end, :);
+honeyHandle2.LineWidth = 2;
+colormap(map)
+
+% Add color bar
+bar = colorbar;
+ylabel(bar, 'counts', 'Rotation', -90, 'VerticalAlignment', 'bottom')

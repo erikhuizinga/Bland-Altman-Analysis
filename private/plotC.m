@@ -9,16 +9,15 @@ function scatterC = plotC(axC, x, y, ...
 axes(axC)
 legEntries = gobjects(0);
 
-% Plot y against x
+% Determine if honeycomb plot is requested
+isHoneycomb = strcmpi(scatterName, 'honeycomb');
+
+% Scatter y against x
 scatterFunction = getScatterFunction(scatterName);
 scatterC = scatterFunction(x, y);
-if strcmpi(scatterName, 'scatter')
+if ~isHoneycomb
     scatterC.ZData = 1 : n;
     scatterC.UserData = dcStruct([], 'M1', 'M2', 'j', [], @dcXYZ);
-    
-else
-    bar = colorbar;
-    ylabel(bar, 'counts', 'Rotation', -90, 'VerticalAlignment', 'bottom')
 end
 
 if doPlotBasicStats
@@ -38,7 +37,7 @@ end
 
 % Add y = x reference line
 eqLine = refline(1, 0);  % Line at 45°, because axis are equal
-eqLine.Color = [.75, .75, .75];
+eqLine.Color = [getLineColor(scatterName), .5];
 eqLine.LineStyle = '--';
 eqLine.DisplayName = 'line of equality';
 eqLine.UserData = dcStruct([], [], [], [], 'M2 = M1', @dcXYZ);
@@ -58,7 +57,9 @@ title(sprintf([scatterName, ' plot of ' ...
 legend(legEntries, 'Location', 'SouthEast')
 
 % Reorder plot children
-axC.Children = axC.Children([end, 1 : end-1]);
+if ~isHoneycomb
+    axC.Children = axC.Children([end, 1 : end-1]);
+end
 
 % Equalise axes
 axis tight
