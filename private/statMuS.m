@@ -25,13 +25,15 @@ end
 
 
 %% Parse inputs
-[x, y, ~, n, z, t, doConstantRegression, assumeCTV] = varargin{:};
+[x, y, ~, n, z, t, doConstantRegression, assumeCTV, scatterSet] = ...
+    varargin{:};
 haveCell = iscell(x);
 
-% Vectorise x and y into X and Y and calculate the vectorised statistic
+% Vectorise x and y into X and Y
 if haveCell
     X = [x{:}];
     Y = [y{:}];
+    
 else
     X = transpose(x);
     X = X(:);
@@ -63,7 +65,7 @@ else
     muYWithin = mean(y, 2);
 end
 
-% Calculate subject mean statistic, which is the statistic to plot as well
+% Calculate subject mean statistic
 muSWithin = SFun(muXWithin, muYWithin);
 
 
@@ -246,8 +248,9 @@ end
 loa = muS + z * sS * [-1, 1];
 
 
-%% Calculate subject mean to plot
+%% Calculate subject mean
 muWithin = mean([muXWithin, muYWithin], 2);
+mu = (X + Y) / 2;
 
 
 %% Calculate linear regression statistics of mean and S
@@ -312,10 +315,11 @@ eLoa = t * seLoa;
 loaCI = [loa; loa] + eLoa * [-1, -1 ; 1, 1];
 
 
-%% Set output
+%% Set output arguments
 varargout = {muWithin, muSWithin, varXWithin, varYWithin, loaCI, loa, ...
              muS, muSCI, eLoa, eS, sS, polyMuS, msePolyMuS, ...
-             sResPolyMuS, polyLLoa, polyULoa, m, X, Y};
+             sResPolyMuS, polyLLoa, polyULoa, m, ...
+             X, Y, muXWithin, muYWithin, mu, S};
 end
 
 

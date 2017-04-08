@@ -425,7 +425,7 @@ f10 = figure;
 % Perform Bland-Altman Analysis for repeated measurements with unequal
 % replicates
 stats = ba(f10, cellRV, cellIC, 'XName', RVName, 'YName', ICName, ...
-          'PlotMeanDifference', true);
+          'PlotMeanDifference', true, 'ScatterSet', 'mean');
 
 
 % Show results, compare with comments

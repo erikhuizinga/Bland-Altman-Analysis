@@ -3,7 +3,7 @@ function scatterM = plotM( ...
                loaCI, pRSMuY, rSMuY, loa, a, z, muY, muYCI, ...
                doPlotExtendedStats, eLoa, eMuY, strYFun, n, xName, ...
                yName, doPlotRegStats, polyXY, msePXY, polyLLoa, ...
-               polyULoa, doConReg, m, scatterName)
+               polyULoa, doConReg, m, scatterName, titleObsStr)
 % Create mean-statistic plot, y referring to the statistic
 
 % Determine if mean-SD plot
@@ -29,7 +29,10 @@ if isHoneycomb
     UserData = struct.empty;
     
 else
-    scatterM.ZData = 1 : n;
+    % Set ZData to the subject number
+    scatterM.ZData = getZData(x, n, N, m);
+    
+    % Set data for custom data tip
     UserData = dcStruct([], 'µ', sMYName, 'i', [], @dcXYZ); %TODO check µ
 end
 
@@ -217,34 +220,36 @@ end
 
 % Add axes labels
 if n == N
-    strSubObs = sprintf( ...
-        '\\itn\\bf = %u subjects and observation pairs', n);
+    titleCountStr = sprintf( ...
+        '\\itn\\rm\\bf = %u subjects and observation pairs', n);
     
 elseif doMSD
-    strSubObs = sprintf( ...
-        '\\itn\\bf = %u subjects, \\it\\Sigmam\\bf = %u observations', ...
-        n, N);
+    titleCountStr = sprintf([ ...
+        '\\itn\\rm\\bf = %u subjects, \\Sigma\\itm\\rm\\bf = %u ' ...
+        'observations'], n, N);
     
 else
-    strSubObs = sprintf( ...
-        '\\itn\\bf = %u subjects, \\it\\Sigmam\\bf = %u observation pairs', ...
-        n, N);
+    titleCountStr = sprintf([ ...
+        '\\itn\\rm\\bf = %u subjects, \\Sigma\\itm\\rm\\bf = %u ' ...
+        'observation pairs'], n, N);
 end
+
+titlePrefix = ['Mean-%s plot ', titleObsStr];
 
 if doMSD
     xlabel('subject mean')
     ylabel(sMYLongName)
-    title(sprintf('Mean-%s plot of (%s):\n\\rm%s', sMYLongName, ...
-                  strSubObs, xName))
+    title(sprintf([titlePrefix, '(%s)\n\\rm%s'], ...
+                   sMYLongName, titleCountStr, xName))
     
 else
     xlabel(sprintf('mean \\itµ = (M_1+M_2)/2'))  %TODO check µ
     strYLabel = sprintf('%s \\it%s = M_1%sM_2', sMYLongName, sMYName, ...
                         strYFun);
     ylabel(strYLabel)
-    title(sprintf(['Mean-%s plot of (%s):\n' ...
+    title(sprintf([titlePrefix, ' (%s)\n' ...
                    ' \\rm\\itM_1\\rm: %s, \\itM_2\\rm: %s'], ...
-                   sMYLongName, strSubObs, xName, yName))
+                   sMYLongName, titleCountStr, xName, yName))
 end
 
 % Add legend

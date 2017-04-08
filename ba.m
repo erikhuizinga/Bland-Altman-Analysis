@@ -428,6 +428,8 @@ p.addParameter('ConstantTrueValue', true, @validatelogical)
 p.addParameter('Transform', @(x) x, ...
                @(f) isa(f,'function_handle') | ischar(f))
 p.addParameter('PlotHoneycomb', false, @validatelogical);
+p.addParameter('ScatterSet', 'full', ...
+               @(x) any(strcmpi(x, {'full', 'mean'})))
 
 % Parse inputs
 parse(p, in{:})
@@ -546,7 +548,7 @@ out = baa( ...  % baa: Bland-Altman Analysis
            doPlotBasicStats, doPlotExtendedStats, ...
            doPlotRegStats, doConstantRegression, ...
            doRepeated, assumeCTV, ...
-           scatterName);
+           scatterName, ScatterSet);
 
 
 %% Set output

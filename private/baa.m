@@ -4,7 +4,7 @@ function varargout = baa(x, xName, y, yName, a, ...
                          doPlotC, axC, doPlotBasicStats, ...
                          doPlotExtendedStats, doPlotRegStats, ...
                          doConstantRegression, doRepeated, assumeCTV, ...
-                         scatterName)
+                         scatterName, scatterSet)
 
 
 %% Prepare
@@ -13,6 +13,15 @@ if doPlotMD || doPlotC || doPlotMR || doPlotMSD1 || doPlotMSD2
     f = get(ax, 'Parent');
     if iscell(f), f = vertcat(f{:}); end
     f = unique(f);  % f can be the handle to one or more figures
+    
+    % Set plot title suffix
+    switch scatterSet
+        case 'mean'
+            titleObsStr = 'of subject means';
+            
+        otherwise
+            titleObsStr = 'of observations';
+    end
 else
     f = [];
 end
@@ -29,25 +38,27 @@ t = Tinv(p, n - 1);  % Calculate t-statistics for p with n-1 d.o.f.
 
 
 % Calculate difference statistics
-[muXY, D, varXWithin, varYWithin, loaDCI, loaD, muD, muDCI, eLoaD, ...
-    eMuD, sD, polyMuXYD, msePolyMuXYD, sResPolyMuXYD, polyLLoaD, ...
-    polyULoaD, m, X, Y] ...
+[muXYWithin, DWithin, varXWithin, varYWithin, loaDCI, loaD, muD, muDCI, ...
+    eLoaD, eMuD, sD, polyMuXYD, msePolyMuXYD, sResPolyMuXYD, polyLLoaD, ...
+    polyULoaD, m, X, Y, muXWithin, muYWithin, muXY, D] ...
     = statMuS(x, y, 'difference', n, z, t, doConstantRegression, ...
-              assumeCTV);
+              assumeCTV, scatterSet);
 
 
 % Calculate mean-difference correlation statistics
-[rSMuD, pRSMuD] = corr(muXY, D, 'type', 'Spearman');
+[rSMuD, pRSMuD] = corr(muXYWithin, DWithin, 'type', 'Spearman');
 
 
 % Calculate ratio statistics
 if doPlotMR  % This is only calculated if mean-ratio graph is requested
-    [~, R, ~, ~, loaRCI, loaR, muR, muRCI, eLoaR, eMuR, sR, ...
-        polyMuXYR, msePolyMuXYR, sResPolyMuXYR, polyLLoaR, polyULoaR] ...
-        = statMuS(x, y, 'ratio', n, z, t, doConstantRegression, assumeCTV);
+    [~, RWithin, ~, ~, loaRCI, loaR, muR, muRCI, eLoaR, eMuR, sR, ...
+        polyMuXYR, msePolyMuXYR, sResPolyMuXYR, polyLLoaR, polyULoaR, ...
+        ~, ~, ~, ~, ~, ~, R] ...
+        = statMuS(x, y, 'ratio', n, z, t, doConstantRegression, ...
+                  assumeCTV, scatterSet);
     
     % Calculate mean-ratio correlation statistics
-    [rSMuR, pRSMuR] = corr(muXY, R, 'type', 'Spearman');
+    [rSMuR, pRSMuR] = corr(muXYWithin, RWithin, 'type', 'Spearman');
 end
 
 
@@ -104,33 +115,69 @@ end
 %% Create graphics
 % Create correlation plot
 if doPlotC
+    % Determine data set to plot
+    switch scatterSet
+        case 'mean'
+            X2Plot = muXWithin;
+            Y2Plot = muYWithin;
+            
+        otherwise
+            X2Plot = X;
+            Y2Plot = Y;
+    end
+    
+    % Plot data set
     scatterC = plotC( ...
-        axC, X, Y, ...
-        doPlotBasicStats, pRhoXY, rhoXY, sum(m), ...
+        axC, X2Plot, Y2Plot, ...
+        doPlotBasicStats, pRhoXY, rhoXY, n, ...
         xName, yName, ...
-        scatterName);
+        scatterName, m, titleObsStr);
 end
 
 
 % Create mean-difference plot
 if doPlotMD
+    % Determine data set to plot
+    switch scatterSet
+        case 'mean'
+            M2Plot = muXYWithin;
+            S2Plot = DWithin;
+            
+        otherwise
+            M2Plot = muXY;
+            S2Plot = D;
+    end
+    
+    % Plot data set
     scatterMD = plotM( ...
-          axMD, muXY, D, 'difference', 'D', 0, doPlotBasicStats, ...
+          axMD, M2Plot, S2Plot, 'difference', 'D', 0, doPlotBasicStats, ...
           loaDCI, pRSMuD, rSMuD, loaD, a, z, muD, muDCI, ...
           doPlotExtendedStats, eLoaD, eMuD, '-', n, xName, yName, ...
           doPlotRegStats, polyMuXYD, msePolyMuXYD, polyLLoaD, ...
-          polyULoaD, doConstantRegression, m, scatterName);
+          polyULoaD, doConstantRegression, m, scatterName, titleObsStr);
 end
 
 
 % Create mean-ratio plot
 if doPlotMR
+    % Determine data set to plot
+    switch scatterSet
+        case 'mean'
+            M2Plot = muXYWithin;
+            S2Plot = RWithin;
+            
+        otherwise
+            M2Plot = muXY;
+            S2Plot = R;
+    end
+    
+    % Plot data set
     scatterMR = plotM( ...
-          axMR, muXY, R, 'ratio', 'R', 1, doPlotBasicStats, loaRCI, ...
-          pRSMuR, rSMuR, loaR, a, z, muR, muRCI, doPlotExtendedStats, ...
-          eLoaR,eMuR, '/', n, xName, yName, doPlotRegStats, polyMuXYR, ...
-          msePolyMuXYR, polyLLoaR, polyULoaR, doConstantRegression, m, ...
-          scatterName);
+          axMR, M2Plot, S2Plot, 'ratio', 'R', 1, doPlotBasicStats, ...
+          loaRCI, pRSMuR, rSMuR, loaR, a, z, muR, muRCI, ...
+          doPlotExtendedStats, eLoaR,eMuR, '/', n, xName, yName, ...
+          doPlotRegStats, polyMuXYR, msePolyMuXYR, polyLLoaR, ...
+          polyULoaR, doConstantRegression, m, scatterName, titleObsStr);
 end
 
 
@@ -154,7 +201,7 @@ if doPlotMSD1
           doPlotBasicStats, [], pRMSD1,rMSD1, [], [], [], [], [], ...
           doPlotExtendedStats, [], [], 'std', n, xNameMSD1, [], ...
           doPlotRegStats, polyMSD1, msePolyMSD1, polyLLoaMSD1, ...
-          polyULoaMSD1, doConstantRegression, m, scatterName);
+          polyULoaMSD1, doConstantRegression, m, scatterName, '');
 end
 
 
@@ -178,7 +225,7 @@ if doPlotMSD2
           doPlotBasicStats, [], pRMSD2, rMSD2, [], [], [], [], [], ...
           doPlotExtendedStats, [], [], 'std', n, xNameMSD2, [], ...
           doPlotRegStats, polyMSD2, msePolyMSD2, polyLLoaMSD2, ...
-          polyULoaMSD2, doConstantRegression, m, scatterName);
+          polyULoaMSD2, doConstantRegression, m, scatterName, '');
 end
 
 
@@ -198,7 +245,7 @@ out.difference.biasCI = muDCI;  % confidence interval (CI) of bias
 out.difference.loa = loaD;  % limits of agreement (LOA) of D
 out.difference.loaCI = loaDCI;  % CI of the LOA of D
 out.difference.std = sD;  % standard deviation (SD) of D
-out.difference.D = D;  % difference to plot against mean
+out.difference.D = DWithin;  % difference to plot against mean
 out.difference.Spearman.r = rSMuD;  % Spearman rank correlation of D and mean (mu)
 out.difference.Spearman.p = pRSMuD;  % p-value of rSMuD
 out.difference.poly.bias = polyMuXYD;  % simple linear regression of D on mu
@@ -214,7 +261,7 @@ if doPlotMR
     out.ratio.loa = loaR;
     out.ratio.loaCI = loaRCI;
     out.ratio.std = sR;
-    out.ratio.R = R;  % ratio to plot against mean
+    out.ratio.R = RWithin;  % ratio to plot against mean
     out.ratio.Spearman.r = rSMuR;
     out.ratio.Spearman.p = pRSMuR;
     out.ratio.poly.bias = polyMuXYR;
@@ -238,7 +285,7 @@ end
 % Set general outputs
 out.xy.x = x;  % x-values used in the calculations
 out.xy.y = y;  % y-values used in the calculations
-out.xy.mu = muXY;  % mean values to plot against
+out.xy.mu = muXYWithin;  % mean values to plot against
 out.n = n;  % number of subjects
 
 
