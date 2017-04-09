@@ -181,6 +181,18 @@ function varargout = ba(varargin)
 %      on the mean, resulting in the possibility of non-constant lines.
 %   If no plots are created, the 'PlotStatistics' value is ignored.
 %
+%   'ScatterSet': Use (part of) the input data in the scatter graphs
+%   'full' (default) | 'mean'
+%   Use the specified data set for the graphs. If 'full' is specified
+%   (default), then all observation pairs in the input data are used in the
+%   graphs. If 'mean' is specified, then the subject mean is used in the
+%   graphs. The plot titles are adjusted accordingly. This Name-Value pair
+%   argument only affects BAA for repeated measurements, because the
+%   subject mean without repeated measurement equals all observation pairs.
+%   However, the plot titles will reflect the chosen set anyway. This
+%   option does not affect the mean-standard deviation graphs, because the
+%   standard deviation always is one observation per subject.
+%
 %   'ConstantResidualVariance': Assume constant residual variance
 %   false (default) | true
 %   Assume constant residual variance in the simple linear regression

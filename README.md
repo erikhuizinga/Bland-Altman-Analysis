@@ -107,6 +107,11 @@ If no plots are created, the `'PlotStatistics'` value is ignored.
 
 Assume constant residual variance in the simple linear regression performed if the `'PlotStatistics', 'regression'` Name-Value pair argument is specified. This means the upper and lower limits of agreement lines will have the same slope as the bias line. This assumption holds if the slope of the upper and lower limits of agreement do not differ significantly from the slope of the bias regression line.
 
+### `'ScatterSet'`: Use (part of) the input data in the scatter graphs
+`'full'` (default) | `'mean'`
+
+Use the specified data set for the graphs. If `'full'` is specified (default), then all observation pairs in the input data are used in the graphs. If `'mean'` is specified, then the subject mean is used in the graphs. The plot titles are adjusted accordingly. This Name-Value pair argument only affects BAA for repeated measurements, because the subject mean without repeated measurement equals all observation pairs. However, the plot titles will reflect the chosen set anyway. This option does not affect the mean-standard deviation graphs, because the standard deviation always is one observation per subject.
+
 ### `'ConstantTrueValue'`: Assume the true value is constant
 `true` (default) | `false`
 
